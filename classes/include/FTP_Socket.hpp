@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -27,6 +28,8 @@ public:
 
     ssize_t recv(int clientSocket, void *buffer, int flag);
     ssize_t send(int socket, void *buffer, int flag);
+    int sendFile(int clientSocket, const char *fileName);
+    int recvFile(int clientSocket, const char *fileName);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();

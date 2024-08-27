@@ -14,13 +14,17 @@ int main(int argc, char *argv[])
     Server server = Server(port, maxQueue);
     int clientFD = server.accept();
 
-    char clientMsg[2048];
-    server.recv(clientFD, clientMsg, 0);
-    std::cout << "Client message: " << clientMsg << std::endl;
+    server.recvFile(clientFD, "serverFiles/test.txt");
+    char response[1024] = "File received by server";
+    server.send(clientFD, response, 0);
 
-    char serverMsg[2048] = "pong";
-    server.send(clientFD, serverMsg, 0);
-    std::cout << "Sent: " << serverMsg << std::endl;
+    // char clientMsg[2048];
+    // server.recv(clientFD, clientMsg, 0);
+    // std::cout << "Client message: " << clientMsg << std::endl;
+
+    // char serverMsg[2048] = "pong";
+    // server.send(clientFD, serverMsg, 0);
+    // std::cout << "Sent: " << serverMsg << std::endl;
 
     while (true)
     {
