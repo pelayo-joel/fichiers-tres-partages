@@ -44,27 +44,8 @@ ssize_t FTP_Socket::send(int socket, void *buffer, int flag)
 int FTP_Socket::sendFile(int socket, const char *fileName)
 {
     char buffer_[MAX_SIZE_PACKET];
-    // std::string line;
     std::ifstream file;
 
-    // std::fstream file;
-    // fileTest.open(fileName, std::ios::in);
-
-    // if (!fileTest) {
-    //     std::cerr << "Error: Could not open file " << fileName << std::endl;
-    //     return -1;
-    // }
-    // else {
-    //     std::cout << "File opened successfully" << std::endl;
-
-    //     while(!fileTest.eof()) {
-    //         fileTest >> line;
-    //         std::cout << line << std::endl;
-    //     }
-    //     std::cout << "End while" << std::endl;
-
-    //     fileTest.close();
-    // }
     file.open(fileName, std::ios::binary);
 
     if(!file.is_open())
@@ -78,6 +59,7 @@ int FTP_Socket::sendFile(int socket, const char *fileName)
         
         
         file.read(buffer_, MAX_SIZE_PACKET);
+        std::cout << buffer_ << std::endl;
         int bytesRead = file.gcount();
         std::cout << "bytesRead: " << bytesRead << std::endl;
         ::send(socket, buffer_, bytesRead, 0);
@@ -90,17 +72,25 @@ int FTP_Socket::sendFile(int socket, const char *fileName)
 int FTP_Socket::recvFile(int socket, const char *fileName)
 {
     char buffer_[MAX_SIZE_PACKET];
-    std::ofstream file(fileName, std::ios::binary);
+    std::ofstream file;
+
+    file.open(fileName, std::ios::out);
+
     if (!file.is_open())
     {
         std::cerr << "Error: Could not open file " << fileName << std::endl;
         return -1;
     }
 
-    int bytesReceived = 0;
-    while ((bytesReceived = read(socket, buffer_, 0)) > 0)
+    int bytesReceived = read(socket, buffer_, 1024);
+    int fileSize = 0;
+    std::cout << "bytesReceived: " << bytesReceived << std::endl;
+    std::cout << "Receiving file..." << std::endl;
+    while (fileSize != bytesReceived)
     {
+        // std::cout << "Received: " << buffer_ << std::endl;
         file.write(buffer_, bytesReceived);
+        fileSize += bytesReceived;
     }
 
     std::cout << "File received successfully" << std::endl;
