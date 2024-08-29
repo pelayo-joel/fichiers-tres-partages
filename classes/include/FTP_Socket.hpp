@@ -32,6 +32,7 @@ public:
     ssize_t send(int socket, void *buffer, int flag);
     int sendFile(int clientSocket, char* filePath);
     int recvFile(int clientSocket);
+    char* pathToReceivedFile(char* fileName);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();

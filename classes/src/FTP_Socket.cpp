@@ -43,11 +43,7 @@ ssize_t FTP_Socket::send(int socket, void *buffer, int flag)
 
 int FTP_Socket::sendFile(int socket, char* filePath)
 {
-    // char buffer_[MAX_SIZE_PACKET];
     FTP_Packet newPacket = FTP_Packet();
-    // char* fileName = newPacket.pathParsing(filePath);
-    std::cout << "FilePathArgument : " << filePath << std::endl;
-    // std::cout << "FileNameParsing : " << fileName << std::endl;
 
     std::ifstream file; 
 
@@ -60,18 +56,12 @@ int FTP_Socket::sendFile(int socket, char* filePath)
     }
 
     while(!file.eof()) {
-        std::cout << "begin while" << std::endl;
         file.read(newPacket.get_RawData(), MAX_SIZE_PACKET);
         int bytesRead = file.gcount();
 
         newPacket.set_FileName(filePath);
-        std::cout << "filename of new packet in while sendfile : " << newPacket.get_FileName() << std::endl;
-
-        std::cout << "sizeof file: " << sizeof(file) << std::endl;
-        std::cout << "sizeof FTP_Packet: " << sizeof(FTP_Packet) << std::endl;
-
         newPacket.set_FileSize(bytesRead);
-        ::send(socket, &newPacket, bytesRead, 0);
+        ::send(socket, &newPacket, sizeof(FTP_Packet), 0);
     }
 
     file.close();
@@ -83,36 +73,44 @@ int FTP_Socket::sendFile(int socket, char* filePath)
 int FTP_Socket::recvFile(int socket)
 {
     char buffer_[MAX_SIZE_PACKET];
+    char filePath[128];
     std::ofstream file;
 
     int bytesReceived = read(socket, buffer_, MAX_SIZE_PACKET);
+
     FTP_Packet newPacket = *(FTP_Packet*) buffer_;
+    strcpy(filePath, pathToReceivedFile(newPacket.get_FileName()));
 
-    // if (!file.is_open())
+    file.open(filePath, std::ios::out);
+    file.write(newPacket.get_RawData(), newPacket.get_FileSize());
+
+    // while ((bytesReceived = read(socket, buffer_, MAX_SIZE_PACKET)) > 0)
     // {
-    //     std::cerr << "Error: Could not open file " << fileName << std::endl;
-    //     return -1;
-    // }
-    std::cout << "filename : " << newPacket.get_FileName() << std::endl;
+    //     FTP_Packet newPacket = *(FTP_Packet*) buffer_;
+    //     strcpy(filePath, pathToReceivedFile(newPacket.get_FileName()));
 
-    file.open(newPacket.get_FileName(), std::ios::out);
-    std::cout << "bytesReceived: " << bytesReceived << std::endl;
-    std::cout << "filesize: " << newPacket.get_FileSize() << std::endl;
-    // std::cout << "Receiving file..." << std::endl;
-    int fileSize = 0;
-    while (fileSize <= bytesReceived)
-    {
-        file.write(newPacket.get_RawData(), newPacket.get_FileSize());
-        fileSize += bytesReceived;
-        // std::cout << "Received: " << buffer_ << std::endl;
-    }
+    //     file.open(filePath, std::ios::out);
+    //     file.write(newPacket.get_RawData(), newPacket.get_FileSize());
+    // }
 
     file.close();
-    std::cout << "File received successfully" << std::endl;
+    std::cout << "File received successfully at: " << filePath << std::endl;
 
     return 0;
 }
 
+char* FTP_Socket::pathToReceivedFile(char* fileName) {
+    std::string strFilename = fileName;
+    strFilename.insert(0, "serverFiles/");
+
+    auto strLen = strFilename.length();
+
+    char* filePath = new char[strLen + 2];
+    std::memcpy(filePath, strFilename.c_str(), strLen);
+
+    filePath[strLen] = '\0';
+    return filePath;
+}
 
 int FTP_Socket::get_socketFD() { return socketFD_; }
 struct sockaddr_in FTP_Socket::get_sinAddress() { return sinAddress_; }

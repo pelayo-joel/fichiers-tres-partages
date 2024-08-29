@@ -56,7 +56,6 @@ int Server::listen(int maxQueue)
     return ::listen(serverSocket, maxQueue);
 }
 
-
 int Server::getMasterFD() { return masterFD_; }
 int Server::getClientFD() { return clientFD_; }
 int Server::getActivity() { return activity_; }

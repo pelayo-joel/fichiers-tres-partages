@@ -29,7 +29,7 @@ char* FTP_Packet::get_RawData() { return rawData; }
 void FTP_Packet::set_FileName(char* newName) {
     std::string strPath = newName;
     std::string parsedFilename = strPath.substr(strPath.find_last_of("/\\") + 1);
-    std::cout << "Return pathParsing : " << &parsedFilename[0] << std::endl;
+    // std::cout << "Return pathParsing : " << &parsedFilename[0] << std::endl;
     strcpy(fileName, &parsedFilename[0]);
 }
 void FTP_Packet::set_FileSize(ssize_t newSize) {
