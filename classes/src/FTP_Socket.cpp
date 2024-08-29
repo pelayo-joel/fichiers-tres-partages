@@ -41,57 +41,58 @@ ssize_t FTP_Socket::send(int socket, void *buffer, int flag)
     return ::send(socket, buffer, 2048, flag);
 }
 
-int FTP_Socket::sendFile(int socket, const char *fileName)
+int FTP_Socket::sendFile(int socket, char* filePath)
 {
-    char buffer_[MAX_SIZE_PACKET];
-    std::ifstream file;
+    // char buffer_[MAX_SIZE_PACKET];
+    FTP_Packet newPacket = FTP_Packet();
+    char* fileName = newPacket.pathParsing(filePath);
+    std::ifstream file; 
 
-    file.open(fileName, std::ios::binary);
+    file.open(filePath, std::ios::binary);
 
     if(!file.is_open())
     {
-        std::cerr << "Error: Could not open file " << fileName << std::endl;
+        std::cerr << "Error: Could not open file " << filePath << std::endl;
         return -1;
     }
 
     while(!file.eof()) {
         std::cout << "begin while" << std::endl;
-        
-        
-        file.read(buffer_, MAX_SIZE_PACKET);
-        std::cout << buffer_ << std::endl;
+        file.read(newPacket.get_RawData(), MAX_SIZE_PACKET);
         int bytesRead = file.gcount();
-        std::cout << "bytesRead: " << bytesRead << std::endl;
-        ::send(socket, buffer_, bytesRead, 0);
-        std::cout << "end while" << std::endl;
-
+        newPacket.set_FileName(fileName);
+        newPacket.set_FileSize(bytesRead);
+        ::send(socket, &newPacket, bytesRead, 0);
     }
+
+    std::cout << "File successfully sent !" << std::endl;
+
     return 0;
 }
 
-int FTP_Socket::recvFile(int socket, const char *fileName)
+int FTP_Socket::recvFile(int socket)
 {
     char buffer_[MAX_SIZE_PACKET];
     std::ofstream file;
 
-    file.open(fileName, std::ios::out);
+    int bytesReceived = read(socket, buffer_, MAX_SIZE_PACKET);
+    FTP_Packet newPacket = *(FTP_Packet*) buffer_;
 
-    if (!file.is_open())
-    {
-        std::cerr << "Error: Could not open file " << fileName << std::endl;
-        return -1;
-    }
+    // if (!file.is_open())
+    // {
+    //     std::cerr << "Error: Could not open file " << fileName << std::endl;
+    //     return -1;
+    // }
 
-    int bytesReceived = read(socket, buffer_, 1024);
-    int fileSize = 0;
-    std::cout << "bytesReceived: " << bytesReceived << std::endl;
-    std::cout << "Receiving file..." << std::endl;
-    while (fileSize != bytesReceived)
-    {
-        // std::cout << "Received: " << buffer_ << std::endl;
-        file.write(buffer_, bytesReceived);
-        fileSize += bytesReceived;
-    }
+    file.open(newPacket.get_FileName(), std::ios::out);
+    // std::cout << "bytesReceived: " << bytesReceived << std::endl;
+    // std::cout << "Receiving file..." << std::endl;
+    file.write(newPacket.get_RawData(), bytesReceived);
+    // fileSize += bytesReceived;
+    // while (fileSize <= bytesReceived)
+    // {
+    //     // std::cout << "Received: " << buffer_ << std::endl;
+    // }
 
     std::cout << "File received successfully" << std::endl;
 

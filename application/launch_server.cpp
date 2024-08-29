@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     Server server = Server(port, maxQueue);
     int clientFD = server.accept();
 
-    server.recvFile(clientFD, "serverFiles/test.txt");
+    server.recvFile(clientFD);
     char response[1024] = "File received by server";
     server.send(clientFD, response, 0);
 
