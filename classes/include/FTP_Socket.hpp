@@ -1,14 +1,17 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <cstring>
+#include <limits.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 
-#define MAX_SIZE_PACKET 4096
+#include "FTP_Packet.hpp"
+
 #define IP "127.0.0.1"
 
 class FTP_Socket
@@ -27,6 +30,9 @@ public:
 
     ssize_t recv(int clientSocket, void *buffer, int flag);
     ssize_t send(int socket, void *buffer, int flag);
+    int sendFile(int clientSocket, char* filePath);
+    int recvFile(int clientSocket);
+    char* pathToReceivedFile(char* fileName);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();

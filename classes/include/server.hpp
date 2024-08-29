@@ -36,4 +36,5 @@ public:
     // void setClients(std::vector<int> clients);
     void setReadfds(fd_set readfds);
 
+    char* pathToReceivedFile(char* fileName);
 };
