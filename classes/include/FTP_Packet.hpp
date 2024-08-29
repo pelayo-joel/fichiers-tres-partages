@@ -38,5 +38,5 @@ public:
     void set_FileSize(ssize_t newSize);
     void set_RawData(void* data);
 
-    char* pathParsing(char* filePath);
+    // char* pathParsing(char* filePath);
 };
