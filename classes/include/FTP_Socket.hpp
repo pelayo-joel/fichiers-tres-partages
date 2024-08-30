@@ -12,7 +12,7 @@
 
 #include "FTP_Packet.hpp"
 
-#define IP "127.0.0.1"
+
 
 class FTP_Socket
 {

@@ -3,14 +3,14 @@
 Server::Server(int port, int maxQueue) : FTP_Socket(port)
 {
     int serverSocket = this->get_socketFD();
-    int enableReuse = 1;
+    // int enableReuse = 1;
 
     sinAddress_.sin_addr.s_addr = INADDR_ANY;
-    char serverIP[INET_ADDRSTRLEN] = IP;
+    char serverIP[INET_ADDRSTRLEN] = "127.0.0.1";
     inet_ntop(AF_INET, &sinAddress_.sin_addr, serverIP, INET_ADDRSTRLEN);
 
     // Allows the server socket to connect to multiple client sockets
-    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&enableReuse, sizeof(enableReuse));
+    // setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&enableReuse, sizeof(enableReuse));
 
     bind();
     listen(maxQueue);

@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     char response[1024] = "File received by server";
     server.send(clientFD, response, 0);
 
+    std::cout << "Huh..." << std::endl;
     // char clientMsg[2048];
     // server.recv(clientFD, clientMsg, 0);
     // std::cout << "Client message: " << clientMsg << std::endl;
