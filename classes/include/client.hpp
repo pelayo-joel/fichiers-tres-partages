@@ -9,7 +9,7 @@ private:
     int connect();
 
 public:
-    Client(int port);
+    Client(char* serverAddress, int port);
     Client(const Client &base);
     ~Client();
     Client &operator=(const Client &base);

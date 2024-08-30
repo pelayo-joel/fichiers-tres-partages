@@ -1,8 +1,9 @@
 #include "../include/client.hpp"
 
-Client::Client(int port) : FTP_Socket(port)
+Client::Client(char* serverAddress, int port) : FTP_Socket(port)
 {
-    char serverIP[INET_ADDRSTRLEN] = IP;
+    char serverIP[INET_ADDRSTRLEN];
+    strcpy(serverIP, serverAddress);
     sinAddress_.sin_addr.s_addr = inet_addr(serverIP);
 
     ::inet_ntop(AF_INET, &sinAddress_.sin_addr, serverIP, INET_ADDRSTRLEN);
