@@ -14,14 +14,9 @@ int main(int argc, char *argv[])
     Server server = Server(port, maxQueue);
     int clientFD = server.accept();
 
-    server.recvFile(clientFD);
+    server.recvClientUpload(clientFD, "ftpServer/");
     char response[1024] = "File received by server";
     server.send(clientFD, response, 0);
-
-    std::cout << "Huh..." << std::endl;
-    // char clientMsg[2048];
-    // server.recv(clientFD, clientMsg, 0);
-    // std::cout << "Client message: " << clientMsg << std::endl;
 
     // char serverMsg[2048] = "pong";
     // server.send(clientFD, serverMsg, 0);

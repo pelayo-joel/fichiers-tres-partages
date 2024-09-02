@@ -1,4 +1,4 @@
-CFLAGS := -Wall -Wextra -Wpedantic  -std=c++14 
+CFLAGS := -Wall -Wextra -Wpedantic  -std=c++17
 
 all:
 	g++ -o lpf application/launch_client.cpp classes/src/FTP_Socket.cpp classes/src/FTP_Packet.cpp classes/src/client.cpp $(CFLAGS)

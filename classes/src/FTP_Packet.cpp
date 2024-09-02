@@ -24,21 +24,20 @@ FTP_Packet &FTP_Packet::operator=(const FTP_Packet &other)
 
 char* FTP_Packet::get_FileName() { return fileName; }
 ssize_t FTP_Packet::get_FileSize() { return fileSize; }
+char* FTP_Packet::get_Username() { return userName; }
 char* FTP_Packet::get_RawData() { return rawData; }
 
 void FTP_Packet::set_FileName(char* newName) {
     std::string strPath = newName;
     std::string parsedFilename = strPath.substr(strPath.find_last_of("/\\") + 1);
-    // std::cout << "Return pathParsing : " << &parsedFilename[0] << std::endl;
     strcpy(fileName, &parsedFilename[0]);
 }
 void FTP_Packet::set_FileSize(ssize_t newSize) {
     fileSize = newSize;
 }
+void FTP_Packet::set_Username(char* newName) {
+    strcpy(userName, newName);
+}
 void FTP_Packet::set_RawData(void* data) {
     memcpy(rawData, data, MAX_SIZE_PACKET);
 }
-
-// char* FTP_Packet::pathParsing(char* filePath) {
-//     return &fileName[0];
-// }
