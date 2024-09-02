@@ -19,6 +19,11 @@ public:
     ~Server();
     Server &operator=(const Server &base);
 
+    int sendClientDownload(int socketFD, char* filePath);
+    int recvClientUpload(int socketFD, char* destPath);
+
+    char* createUserFolder(char* destPath, char* username);
+
     int accept();
     int getMasterFD();
     int getClientFD();

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstdio>  
 #include <cstring>
 #include <limits.h>
 #include <unistd.h>
@@ -9,6 +10,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <filesystem>
 
 #include "FTP_Packet.hpp"
 
@@ -21,6 +23,9 @@ private:
 
 protected:
     struct sockaddr_in sinAddress_;
+    // char* pathToReceivedFile(char* fileName);
+    char* createDestinationFolder(char* username, char* destPath);
+    char* recvFile(int clientSocket);
 
 public:
     FTP_Socket(int port);
@@ -30,9 +35,11 @@ public:
 
     ssize_t recv(int clientSocket, void *buffer, int flag);
     ssize_t send(int socket, void *buffer, int flag);
-    int sendFile(int clientSocket, char* filePath);
-    int recvFile(int clientSocket);
-    char* pathToReceivedFile(char* fileName);
+    int sendFile(int clientSocket, char* filePath, char* username);
+
+    char* pathToReceivedFile(char* folderPath, char* fileName);
+    char* createDestinationFolder(char* destPath);
+    int deleteFile(char* fileName, char* username);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();

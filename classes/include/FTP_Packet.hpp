@@ -20,6 +20,7 @@ private:
     // Header
     ssize_t fileSize;
     char fileName[128];
+    char userName[64];
 
     // Data
     char rawData[MAX_SIZE_PACKET];
@@ -32,10 +33,12 @@ public:
 
     char* get_FileName();
     ssize_t get_FileSize();
+    char* get_Username();
     char* get_RawData();
 
     void set_FileName(char* newName);
     void set_FileSize(ssize_t newSize);
+    void set_Username(char* newName);
     void set_RawData(void* data);
 
     // char* pathParsing(char* filePath);
