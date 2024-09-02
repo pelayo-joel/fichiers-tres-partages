@@ -12,11 +12,7 @@ int main(int argc, char *argv[])
     const int maxQueue = 5;
 
     Server server = Server(port, maxQueue);
-    int clientFD = server.accept();
-
-    server.recvClientUpload(clientFD, "data/");
-    char response[1024] = "File received by server";
-    server.send(clientFD, response, 0);
+    int newClientFD;
 
     // char serverMsg[2048] = "pong";
     // server.send(clientFD, serverMsg, 0);
@@ -25,13 +21,10 @@ int main(int argc, char *argv[])
     while (true)
     {
         if ((newClientFD = server.accept()) > 0) {
-            
+            server.recvClientUpload(newClientFD, "data/");
+            char response[1024] = "File received by server";
+            server.send(newClientFD, response, 0);
         }
-        // server.recvFile(clientFD);
-        // char response[1024] = "File received by server";
-        // server.send(clientFD, response, 0);
-
-        // std::cout << "Huh..." << std::endl;
     }
     
 

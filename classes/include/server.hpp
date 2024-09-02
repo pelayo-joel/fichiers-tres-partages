@@ -22,12 +22,10 @@ public:
     ~Server();
     Server &operator=(const Server &base);
 
-    int sendClientDownload(int socketFD, char* filePath);
+    int accept();
+    char* createUserFolder(char* destPath, char* username);
     int recvClientUpload(int socketFD, char* destPath);
 
-    char* createUserFolder(char* destPath, char* username);
-
-    int accept();
     int getMasterFD();
     int getClientFD();
     int getActivity();
@@ -41,6 +39,6 @@ public:
     void setActivity(int activity);
     void setAddrlen(int addrlen);
     void setMaxClients(int maxClients);
-    // void setClients(std::vector<int> clients);
+    void setClientsThread(std::queue<pthread_t> clientsThread);
     void setReadfds(fd_set readfds);
 };

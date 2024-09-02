@@ -99,7 +99,6 @@ char* Server::createUserFolder(char* destPath, char* username)
 }
 
 
-<<<<<<< HEAD
 int Server::recvClientUpload(int socketFD, char* destPath)
 {
     char buffer_[MAX_SIZE_PACKET];
@@ -149,17 +148,12 @@ char* Server::createUserFolder(char* destPath, char* username)
     return userFolderPath;
 }
 
-
-=======
-
 int Server::accept()
 {
     int serverSocket = this->get_socketFD();
     int addrlen = sizeof(sinAddress_);
     return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
 }
-
->>>>>>> 5d9781b ([UPDATE] Beginning to work on threading with pthreads)
 int Server::getMasterFD() { return masterFD_; }
 int Server::getClientFD() { return clientFD_; }
 int Server::getActivity() { return activity_; }
