@@ -1,0 +1,4 @@
+ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 1
+
+******* DEBUG *******
+2024-08-30 11:11:27		DEBUG		Received response : File received by server
