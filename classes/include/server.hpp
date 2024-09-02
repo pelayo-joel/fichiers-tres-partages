@@ -1,5 +1,8 @@
 #pragma once
 
+#include <pthreads>
+#include <queue>
+
 #include "FTP_Socket.hpp"
 
 
@@ -7,7 +10,7 @@ class Server : public FTP_Socket
 {
 private:
     int masterFD_, clientFD_, activity_, addrlen_, maxClients_;
-    // std::vector<int> clients_;
+    std::queue<pthread_t> clientsThread_;
     fd_set readfds_;
 
     int bind();
@@ -30,7 +33,7 @@ public:
     int getActivity();
     int getAddrlen();
     int getMaxClients();
-    // std::vector<int> getClients();
+    std::queue<int> getClients();
     fd_set getReadfds();
 
     void setMasterFD(int masterFD);

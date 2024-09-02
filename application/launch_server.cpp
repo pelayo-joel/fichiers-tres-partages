@@ -24,7 +24,14 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        /* code */
+        if ((newClientFD = server.accept()) > 0) {
+            
+        }
+        // server.recvFile(clientFD);
+        // char response[1024] = "File received by server";
+        // server.send(clientFD, response, 0);
+
+        // std::cout << "Huh..." << std::endl;
     }
     
 

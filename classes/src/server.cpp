@@ -37,13 +37,6 @@ Server &Server::operator=(const Server &base)
 }
 
 
-int Server::accept()
-{
-    int serverSocket = this->get_socketFD();
-    int addrlen = sizeof(sinAddress_);
-    return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
-}
-
 int Server::bind()
 {
     int serverSocket = this->get_socketFD();
@@ -56,6 +49,7 @@ int Server::listen(int maxQueue)
     return ::listen(serverSocket, maxQueue);
 }
 
+<<<<<<< HEAD
 int Server::recvClientUpload(int socketFD, char* destPath)
 {
     char buffer_[MAX_SIZE_PACKET];
@@ -106,6 +100,16 @@ char* Server::createUserFolder(char* destPath, char* username)
 }
 
 
+=======
+
+int Server::accept()
+{
+    int serverSocket = this->get_socketFD();
+    int addrlen = sizeof(sinAddress_);
+    return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
+}
+
+>>>>>>> 5d9781b ([UPDATE] Beginning to work on threading with pthreads)
 int Server::getMasterFD() { return masterFD_; }
 int Server::getClientFD() { return clientFD_; }
 int Server::getActivity() { return activity_; }
