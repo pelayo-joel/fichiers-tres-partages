@@ -49,6 +49,56 @@ int Server::listen(int maxQueue)
     return ::listen(serverSocket, maxQueue);
 }
 
+int Server::recvClientUpload(int socketFD, char* destPath)
+{
+    char buffer_[MAX_SIZE_PACKET];
+    char filePath[256];
+    std::ofstream file;
+    
+
+    std::memcpy(buffer_, FTP_Socket::recvFile(socketFD), MAX_SIZE_PACKET);
+    FTP_Packet newPacket = *(FTP_Packet*) buffer_;
+
+    char* destinationPath = createDestinationFolder(destPath);
+    char* userPath = createUserFolder(destinationPath, newPacket.get_Username());
+    strcpy(filePath, pathToReceivedFile(userPath, newPacket.get_FileName()));
+
+    file.open(filePath, std::ios::out);
+    file.write(newPacket.get_RawData(), newPacket.get_FileSize());
+
+    // while ((bytesReceived = read(socket, buffer_, MAX_SIZE_PACKET)) > 0)
+    // {
+    //     FTP_Packet newPacket = *(FTP_Packet*) buffer_;
+    //     strcpy(filePath, pathToReceivedFile(newPacket.get_FileName()));
+
+    //     file.open(filePath, std::ios::out);
+    //     file.write(newPacket.get_RawData(), newPacket.get_FileSize());
+    // }
+
+    file.close();
+
+    return 0;
+}
+
+char* Server::createUserFolder(char* destPath, char* username) 
+{
+    std::string mainFolder = destPath;
+    std::string userFolder = mainFolder + username;
+    if (!std::filesystem::exists(userFolder))
+    {
+        std::filesystem::create_directory(userFolder);
+    }
+
+    auto strLen = userFolder.length();
+    char* userFolderPath = new char[strLen + 2];
+    std::memcpy(userFolderPath, userFolder.c_str(), strLen);
+
+    userFolderPath[strLen] = '/';
+    userFolderPath[strLen+1] = '\0';
+    return userFolderPath;
+}
+
+
 <<<<<<< HEAD
 int Server::recvClientUpload(int socketFD, char* destPath)
 {
