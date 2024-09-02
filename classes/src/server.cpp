@@ -37,13 +37,6 @@ Server &Server::operator=(const Server &base)
 }
 
 
-int Server::accept()
-{
-    int serverSocket = this->get_socketFD();
-    int addrlen = sizeof(sinAddress_);
-    return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
-}
-
 int Server::bind()
 {
     int serverSocket = this->get_socketFD();
@@ -54,6 +47,14 @@ int Server::listen(int maxQueue)
 {
     int serverSocket = this->get_socketFD();
     return ::listen(serverSocket, maxQueue);
+}
+
+
+int Server::accept()
+{
+    int serverSocket = this->get_socketFD();
+    int addrlen = sizeof(sinAddress_);
+    return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
 }
 
 int Server::getMasterFD() { return masterFD_; }

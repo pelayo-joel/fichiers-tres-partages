@@ -12,13 +12,7 @@ int main(int argc, char *argv[])
     const int maxQueue = 5;
 
     Server server = Server(port, maxQueue);
-    int clientFD = server.accept();
-
-    server.recvFile(clientFD);
-    char response[1024] = "File received by server";
-    server.send(clientFD, response, 0);
-
-    std::cout << "Huh..." << std::endl;
+    int newClientFD;
     // char clientMsg[2048];
     // server.recv(clientFD, clientMsg, 0);
     // std::cout << "Client message: " << clientMsg << std::endl;
@@ -29,7 +23,14 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        /* code */
+        if ((newClientFD = server.accept()) > 0) {
+            
+        }
+        // server.recvFile(clientFD);
+        // char response[1024] = "File received by server";
+        // server.send(clientFD, response, 0);
+
+        // std::cout << "Huh..." << std::endl;
     }
     
 
