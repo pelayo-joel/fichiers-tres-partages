@@ -109,6 +109,20 @@ char* FTP_Socket::createDestinationFolder(char* destPath)
     return fullPath;
 }
 
+int FTP_Socket::deleteFile(char* fileName, char* username) 
+{
+    char completePath[256] = "data/";
+    snprintf(completePath, sizeof(completePath), "data/%s/%s", username, fileName);
+    // strcat(completePath, username);
+    // strcat(completePath, "/");
+    // strcat(completePath, fileName);
+
+    std::cout << "Deleting file complete path: " << completePath << std::endl;
+
+    int status = remove(completePath);
+    return status;
+}
+
 int FTP_Socket::get_socketFD() { return socketFD_; }
 struct sockaddr_in FTP_Socket::get_sinAddress() { return sinAddress_; }
 

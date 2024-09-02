@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     }
     char* ftpServer = argv[1];
     char* command = argv[2];
-    char* filePath = argv[3];
+    char* fileName = argv[3];
 
     char username[64];
     int port = 0;
@@ -29,21 +29,30 @@ int main(int argc, char *argv[])
 
     if (strcmp(command, "-upload") == 0)
     {
-        std::cout << "Sending: " << filePath << std::endl;
+        std::cout << "Sending: " << fileName << std::endl;
 
-        client.sendFile(clientSocket, filePath, username);
+        client.sendFile(clientSocket, fileName, username);
         
         char response[2048];
         client.recv(clientSocket, response, 0);
     }
     else if (strcmp(command, "-download") == 0)
     {
-        std::cout << "Download: " << filePath << std::endl;
+        std::cout << "Download: " << fileName << std::endl;
 
     }
     else if (strcmp(command, "-delete") == 0)
     {
-        std::cout << "Delete: " << filePath << std::endl;
+        std::cout << "Delete: " << fileName << std::endl;
+
+        if (client.deleteFile(fileName, username) == 0)
+        {
+            std::cout << "File deleted" << std::endl;
+        }
+        else
+        {
+            std::cerr << "Error: Could not delete file" << std::endl;
+        }
     }
     else
     {

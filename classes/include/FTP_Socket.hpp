@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstdio>  
 #include <cstring>
 #include <limits.h>
 #include <unistd.h>
@@ -38,6 +39,7 @@ public:
 
     char* pathToReceivedFile(char* folderPath, char* fileName);
     char* createDestinationFolder(char* destPath);
+    int deleteFile(char* fileName, char* username);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();
