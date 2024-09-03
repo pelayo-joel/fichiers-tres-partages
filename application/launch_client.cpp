@@ -11,9 +11,13 @@ int main(int argc, char *argv[])
     char* command = argv[2];
     char* fileName = argv[3];
 
+    std::cout << "Command: " << command << std::endl;
+
     char username[64];
     int port = 0;
     char serverIP[INET_ADDRSTRLEN];
+    char response[2048];
+
     
     ftpServer = std::strtok(ftpServer, "@");
     strcpy(username, ftpServer);
@@ -27,45 +31,39 @@ int main(int argc, char *argv[])
     Client client = Client(serverIP, port);
     int clientSocket = client.get_socketFD();
 
-    if (strcmp(command, "-upload") == 0)
+    FTP_Packet packet = FTP_Packet();
+
+    if (strcmp(command, "-upload") == 0) 
     {
+        packet.set_Command(commands::UPLOAD);
         std::cout << "Sending: " << fileName << std::endl;
 
         client.sendFile(clientSocket, fileName, username);
-        
-        char response[2048];
-        client.recv(clientSocket, response, 0);
-    }
-    else if (strcmp(command, "-download") == 0)
+        ::recv(clientSocket, response, 2048, 0);
+    } 
+    else if (strcmp(command, "-download") == 0) 
     {
-        std::cout << "Download: " << fileName << std::endl;
+        packet.set_Command(commands::DOWNLOAD);
+        packet.set_FileName(fileName);
+        packet.set_Username(username);
 
-    }
-    else if (strcmp(command, "-delete") == 0)
+        client.send(clientSocket, &packet, 0);
+        client.recvServerDownload();
+        std::cout << "Downloaded in '" << DESTINATION_PATH << "': " << fileName << std::endl;
+    } 
+    else if (strcmp(command, "-delete") == 0) 
     {
-        std::cout << "Delete: " << fileName << std::endl;
-
-        if (client.deleteFile(fileName, username) == 0)
-        {
-            std::cout << "File deleted" << std::endl;
-        }
-        else
-        {
-            std::cerr << "Error: Could not delete file" << std::endl;
-        }
+        packet.set_Command(commands::DELETE);
+        packet.set_FileName(fileName);
+        packet.set_Username(username);
+        client.deleteFileOnServer(packet);
+        ::recv(clientSocket, response, 2048, 0);
     }
     else
     {
         std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-download|-upload|-delete> <filepath>" << std::endl;
         return -1;
     }
-    
-    // char message[1024] = "ping";
-    // client.send(clientSocket, message, 0);
-    // std::cout << "Message sent: " << message << std::endl;
-
-    // client.recv(clientSocket, response, 0);
-    // std::cout << "Server response: " << response << std::endl;
 
     return 0;
 }

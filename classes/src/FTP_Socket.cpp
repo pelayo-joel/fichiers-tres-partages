@@ -33,18 +33,17 @@ FTP_Socket &FTP_Socket::operator=(const FTP_Socket &other)
 
 ssize_t FTP_Socket::recv(int clientSocket, void *buffer, int flag)
 {
-    return ::recv(clientSocket, buffer, 2048, flag);
+    return ::recv(clientSocket, buffer, MAX_SIZE_PACKET, flag);
 }
 
 ssize_t FTP_Socket::send(int socket, void *buffer, int flag)
 {
-    return ::send(socket, buffer, 2048, flag);
+    return ::send(socket, buffer, MAX_SIZE_PACKET, flag);
 }
 
 int FTP_Socket::sendFile(int socket, char* filePath, char* username)
 {
     FTP_Packet newPacket = FTP_Packet();
-
     std::ifstream file; 
 
     file.open(filePath, std::ios::binary);
@@ -107,20 +106,6 @@ char* FTP_Socket::createDestinationFolder(char* destPath)
 
     fullPath[strLen] = '\0';
     return fullPath;
-}
-
-int FTP_Socket::deleteFile(char* fileName, char* username) 
-{
-    char completePath[256] = "data/";
-    snprintf(completePath, sizeof(completePath), "data/%s/%s", username, fileName);
-    // strcat(completePath, username);
-    // strcat(completePath, "/");
-    // strcat(completePath, fileName);
-
-    std::cout << "Deleting file complete path: " << completePath << std::endl;
-
-    int status = remove(completePath);
-    return status;
 }
 
 int FTP_Socket::get_socketFD() { return socketFD_; }

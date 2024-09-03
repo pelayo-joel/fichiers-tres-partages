@@ -1,13 +1,19 @@
 #pragma once
 
+#include <pthread.h>
+#include <thread>
+#include <queue>
+
 #include "FTP_Socket.hpp"
 
+#define DESTINATION_PATH "data/"
 
 class Server : public FTP_Socket
 {
 private:
     int masterFD_, clientFD_, activity_, addrlen_, maxClients_;
-    // std::vector<int> clients_;
+    std::queue<pthread_t> clientsThread_;
+    std::queue<std::thread> threads_;
     fd_set readfds_;
 
     int bind();
@@ -19,18 +25,19 @@ public:
     ~Server();
     Server &operator=(const Server &base);
 
-    int sendClientDownload(int socketFD, char* filePath);
-    int recvClientUpload(int socketFD, char* destPath);
-
-    char* createUserFolder(char* destPath, char* username);
-
     int accept();
+    int createClientThread(int clientFD);
+    // void parsePacket(int clientFD);
+    char* createUserFolder(char* destPath, char* username);
+    int recvClientUpload(FTP_Packet packet);
+    int deleteFile(char* fileName, char* username);
+
     int getMasterFD();
     int getClientFD();
     int getActivity();
     int getAddrlen();
     int getMaxClients();
-    // std::vector<int> getClients();
+    std::queue<int> getClients();
     fd_set getReadfds();
 
     void setMasterFD(int masterFD);
@@ -38,6 +45,6 @@ public:
     void setActivity(int activity);
     void setAddrlen(int addrlen);
     void setMaxClients(int maxClients);
-    // void setClients(std::vector<int> clients);
+    void setClientsThread(std::queue<pthread_t> clientsThread);
     void setReadfds(fd_set readfds);
 };

@@ -3,14 +3,10 @@
 Server::Server(int port, int maxQueue) : FTP_Socket(port)
 {
     int serverSocket = this->get_socketFD();
-    // int enableReuse = 1;
 
     sinAddress_.sin_addr.s_addr = INADDR_ANY;
     char serverIP[INET_ADDRSTRLEN] = "127.0.0.1";
     inet_ntop(AF_INET, &sinAddress_.sin_addr, serverIP, INET_ADDRSTRLEN);
-
-    // Allows the server socket to connect to multiple client sockets
-    // setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&enableReuse, sizeof(enableReuse));
 
     bind();
     listen(maxQueue);
@@ -37,13 +33,6 @@ Server &Server::operator=(const Server &base)
 }
 
 
-int Server::accept()
-{
-    int serverSocket = this->get_socketFD();
-    int addrlen = sizeof(sinAddress_);
-    return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
-}
-
 int Server::bind()
 {
     int serverSocket = this->get_socketFD();
@@ -54,37 +43,6 @@ int Server::listen(int maxQueue)
 {
     int serverSocket = this->get_socketFD();
     return ::listen(serverSocket, maxQueue);
-}
-
-int Server::recvClientUpload(int socketFD, char* destPath)
-{
-    char buffer_[MAX_SIZE_PACKET];
-    char filePath[256];
-    std::ofstream file;
-    
-
-    std::memcpy(buffer_, FTP_Socket::recvFile(socketFD), MAX_SIZE_PACKET);
-    FTP_Packet newPacket = *(FTP_Packet*) buffer_;
-
-    char* destinationPath = createDestinationFolder(destPath);
-    char* userPath = createUserFolder(destinationPath, newPacket.get_Username());
-    strcpy(filePath, pathToReceivedFile(userPath, newPacket.get_FileName()));
-
-    file.open(filePath, std::ios::out);
-    file.write(newPacket.get_RawData(), newPacket.get_FileSize());
-
-    // while ((bytesReceived = read(socket, buffer_, MAX_SIZE_PACKET)) > 0)
-    // {
-    //     FTP_Packet newPacket = *(FTP_Packet*) buffer_;
-    //     strcpy(filePath, pathToReceivedFile(newPacket.get_FileName()));
-
-    //     file.open(filePath, std::ios::out);
-    //     file.write(newPacket.get_RawData(), newPacket.get_FileSize());
-    // }
-
-    file.close();
-
-    return 0;
 }
 
 char* Server::createUserFolder(char* destPath, char* username) 
@@ -106,6 +64,105 @@ char* Server::createUserFolder(char* destPath, char* username)
 }
 
 
+int Server::recvClientUpload(FTP_Packet packet)
+{
+    char filePath[256];
+    std::ofstream file;
+
+    char* destinationPath = createDestinationFolder(DESTINATION_PATH);
+    char* userPath = createUserFolder(destinationPath, packet.get_Username());
+    strcpy(filePath, pathToReceivedFile(userPath, packet.get_FileName()));
+
+    file.open(filePath, std::ios::out);
+    file.write(packet.get_RawData(), packet.get_FileSize());
+
+    file.close();
+
+    return 0;
+}
+
+int Server::deleteFile(char* fileName, char* username) 
+{
+    char completePath[256] = DESTINATION_PATH;
+    snprintf(completePath, sizeof(completePath), "data/%s/%s", username, fileName);
+
+    std::cout << "Deleting file complete path: " << completePath << std::endl;
+
+    int status = remove(completePath);
+    return status;
+}
+
+int Server::createClientThread(int clientFD)
+{
+    auto packetParsing = [this](int client) {
+        char buffer[MAX_SIZE_PACKET];
+        char response[2048];
+        recv(client, buffer, 0);
+
+        FTP_Packet newPacket = *(FTP_Packet*) buffer;
+
+        switch (newPacket.get_Command())
+        {
+            case commands::UPLOAD:
+                recvClientUpload(newPacket);
+                snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
+                ::send(client, response, 2048, 0);
+                break;
+            case commands::DOWNLOAD:
+                char filePath[256];
+                snprintf(filePath, sizeof(filePath), "data/%s/%s", newPacket.get_Username(), newPacket.get_FileName());
+                std::cout << "filepath: " << filePath << std::endl;
+                sendFile(client, filePath, newPacket.get_Username());
+                break;
+            case commands::DELETE:
+                deleteFile(newPacket.get_FileName(), newPacket.get_Username());
+                snprintf(response, sizeof(response), "File '%s' successfully deleted on the ftp-server", newPacket.get_FileName());
+                ::send(client, response, 2048, 0);
+                break;
+            default:
+                std::cerr << "Error: Invalid command" << std::endl;
+                break;
+        }
+    };
+
+    std::thread clientThread(packetParsing, clientFD);
+    std::cout << "ID " << clientFD << ": Done" << std::endl;
+
+    clientThread.join();
+    return 0;
+}
+
+// void Server::parsePacket(int clientFD) 
+// {
+//     char buffer[MAX_SIZE_PACKET];
+//     ::recv(clientFD, buffer, MAX_SIZE_PACKET, 0);
+
+//     FTP_Packet newPacket = *(FTP_Packet*) buffer;
+
+//     if (strcmp(newPacket.get_Command(), "-upload") == 0)
+//     {
+//         recvClientUpload(newPacket);
+//     }
+//     else if (strcmp(newPacket.get_Command(), "-download") == 0)
+//     {
+        
+//     }
+//     else if (strcmp(newPacket.get_Command(), "-delete") == 0)
+//     {
+        
+//     }
+//     else
+//     {
+//         std::cerr << "Error: Invalid command" << std::endl;
+//     }
+// }
+
+int Server::accept()
+{
+    int serverSocket = this->get_socketFD();
+    int addrlen = sizeof(sinAddress_);
+    return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
+}
 int Server::getMasterFD() { return masterFD_; }
 int Server::getClientFD() { return clientFD_; }
 int Server::getActivity() { return activity_; }
