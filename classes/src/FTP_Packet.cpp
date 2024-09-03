@@ -26,6 +26,7 @@ char* FTP_Packet::get_FileName() { return fileName; }
 ssize_t FTP_Packet::get_FileSize() { return fileSize; }
 char* FTP_Packet::get_Username() { return userName; }
 char* FTP_Packet::get_RawData() { return rawData; }
+commands FTP_Packet::get_Command() { return command; }
 
 void FTP_Packet::set_FileName(char* newName) {
     std::string strPath = newName;
@@ -40,4 +41,7 @@ void FTP_Packet::set_Username(char* newName) {
 }
 void FTP_Packet::set_RawData(void* data) {
     memcpy(rawData, data, MAX_SIZE_PACKET);
+}
+void FTP_Packet::set_Command(commands newCommand) {
+    command = newCommand;
 }

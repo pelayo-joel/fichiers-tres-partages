@@ -14,8 +14,6 @@
 
 #include "FTP_Packet.hpp"
 
-
-
 class FTP_Socket
 {
 private:
@@ -33,13 +31,13 @@ public:
     virtual ~FTP_Socket();
     FTP_Socket &operator=(const FTP_Socket &other);
 
-    ssize_t recv(int clientSocket, void *buffer, int flag);
-    ssize_t send(int socket, void *buffer, int flag);
+    ssize_t recv(int clientSocket, void* buffer, int flag);
+    ssize_t send(int socket, void* buffer, int flag);
     int sendFile(int clientSocket, char* filePath, char* username);
 
     char* pathToReceivedFile(char* folderPath, char* fileName);
     char* createDestinationFolder(char* destPath);
-    int deleteFile(char* fileName, char* username);
+    // int deleteFile(char* fileName, char* username);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();
