@@ -11,6 +11,8 @@ Server::Server(int maxQueue) : FTP_Socket(PORT)
     bind();
     listen(maxQueue);
     std::cout << "Servers listens on port " << PORT << std::endl;
+    logger.EventLog(9, "Servers listens on port " + std::to_string(PORT));
+
 }
 
 Server::~Server() {}
@@ -69,6 +71,7 @@ char* Server::createUserFolder(char* username)
 
     userFolderPath[strLen] = '/';
     userFolderPath[strLen+1] = '\0';
+    logger.EventLog(9, "User folder created: " + std::string(userFolderPath));
     return userFolderPath;
 }
 
@@ -83,7 +86,7 @@ int Server::recvClientUpload(FTP_Packet packet)
     file.open(filePath, std::ios::out);
     file.write(packet.get_RawData(), packet.get_FileSize());
     file.close();
-
+    logger.EventLog(9, "File uploaded to server: " + std::string(filePath));
     return 0;
 }
 
@@ -93,7 +96,7 @@ int Server::deleteFile(char* fileName, char* username)
     snprintf(completePath, sizeof(completePath), "%s%s/%s", DESTINATION_PATH, username, fileName);
 
     std::cout << "Deleting file complete path: " << completePath << std::endl;
-
+    logger.EventLog(9, "File deleted: " + std::string(completePath));
     int status = remove(completePath);
     return status;
 }
@@ -175,17 +178,23 @@ int Server::createClientThread(int clientFD)
                 recvClientUpload(newPacket);
                 snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
+                logger.EventLog(9, "File uploaded to server: " + std::string(response));
+
                 break;
             case commands::DOWNLOAD:
                 char filePath[MAX_SIZE_MESSAGE];
                 snprintf(filePath, sizeof(filePath), "data/%s/%s", newPacket.get_Username(), newPacket.get_FileName());
                 std::cout << "filepath: " << filePath << std::endl;
                 sendFile(client, filePath, newPacket.get_Username());
+                logger.EventLog(9, "File send to the client: " + std::string(filePath));
+
                 break;
             case commands::DELETE:
                 deleteFile(newPacket.get_FileName(), newPacket.get_Username());
                 snprintf(response, sizeof(response), "File '%s' successfully deleted on the ftp-server", newPacket.get_FileName());
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
+                logger.EventLog(9, "File deleted: " + std::string(response));
+
                 break;
             default:
                 std::cerr << "Error: Invalid command" << std::endl;
@@ -196,6 +205,7 @@ int Server::createClientThread(int clientFD)
 
     std::thread clientThread(packetParsing, clientFD);
     std::move(clientThread).detach();
+    logger.EventLog(9, "Client thread started: " + std::to_string(clientFD));
 
     return 0;
 }
@@ -240,6 +250,15 @@ int Server::checkUserExists(char* username) {
     }
 
     return 0;
+}
+
+void Server::handleLeave(int signal) {
+    std::cout << "\nSignal (" << signal << ") reçu. Exécution du code avant l'arrêt du programme..." << std::endl;
+
+    AppLogs& logger = AppLogs::Instance();
+    logger.EventLog(9, "Leaving...");
+    logger.GenerateFile();
+    exit(signal);  // Quitter le programme
 }
 
 int Server::createNewUser(char* username, char* password) {

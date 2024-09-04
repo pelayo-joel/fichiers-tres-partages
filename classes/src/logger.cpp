@@ -1,4 +1,4 @@
-#include "../include/Logger.hpp"
+#include "../include/logger.hpp"
 
 std::unique_ptr<AppLogs> AppLogs::_instance = nullptr;
 
@@ -95,3 +95,5 @@ std::string AppLogs::GenerateFile() {
     }
     return pathFile;
 }
+
+

@@ -3,8 +3,10 @@
 #include <pthread.h>
 #include <thread>
 #include <queue>
+#include <csignal>
 
 #include "FTP_Socket.hpp"
+#include "logger.hpp"
 
 #define IP_ADDRESS "127.0.0.1"
 #define PORT 3000
@@ -13,7 +15,7 @@
 class Server : public FTP_Socket
 {
 private:
-    // int addrlen_;
+    AppLogs& logger = AppLogs::Instance();
 
     int bind();
     int listen(int maxQueue);
@@ -32,7 +34,6 @@ public:
     int checkUserExists(char* username);
     int checkClientAuthentication(int client, char* username, char* password);
     int createNewUser(char* username, char* password);
+    void static handleLeave(int signal);
 
-    // int getAddrlen();
-    // void setAddrlen(int addrlen);
 };
