@@ -22,12 +22,8 @@ Server &Server::operator=(const Server &base)
     if (this != &base)
     {
         FTP_Socket::operator=(base);
-        masterFD_ = base.masterFD_;
-        activity_ = base.activity_;
         addrlen_ = base.addrlen_;
-        maxClients_ = base.maxClients_;
-        // clients_ = base.clients_;
-        readfds_ = base.readfds_;
+        // threads_ = base.threads_;
     }
     return *this;
 }
@@ -96,9 +92,32 @@ int Server::createClientThread(int clientFD)
 {
     auto packetParsing = [this](int client) {
         char buffer[MAX_SIZE_PACKET];
-        char response[2048];
-        recv(client, buffer, 0);
+        char response[MAX_SIZE_MESSAGE];
+        char username[MAX_SIZE_USER];
+        char password[MAX_SIZE_USER];
+        int authenticationStatus = -1;
 
+
+        while (authenticationStatus != 0)
+        {
+            char bufferAuthentication[MAX_SIZE_BUFFER];
+            char incorrectPassword[MAX_SIZE_MESSAGE] = "Invalid password !";
+            
+            std::cout << "Waiting for client authentication" << std::endl;
+            ::recv(client, bufferAuthentication, MAX_SIZE_BUFFER, 0);
+
+            char* credentials = strdup(bufferAuthentication);
+
+            credentials = std::strtok(credentials, ":");
+            strcpy(username, credentials);
+            credentials = std::strtok(NULL, "\0");
+            strcpy(password, credentials);
+
+            authenticationStatus = checkClientAuthentication(client, username, password);
+            std::cout << "Authentication status: " << authenticationStatus << std::endl;
+        }
+        
+        recv(client, buffer, 0);
         FTP_Packet newPacket = *(FTP_Packet*) buffer;
 
         switch (newPacket.get_Command())
@@ -106,7 +125,7 @@ int Server::createClientThread(int clientFD)
             case commands::UPLOAD:
                 recvClientUpload(newPacket);
                 snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
-                ::send(client, response, 2048, 0);
+                ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 break;
             case commands::DOWNLOAD:
                 char filePath[256];
@@ -117,45 +136,97 @@ int Server::createClientThread(int clientFD)
             case commands::DELETE:
                 deleteFile(newPacket.get_FileName(), newPacket.get_Username());
                 snprintf(response, sizeof(response), "File '%s' successfully deleted on the ftp-server", newPacket.get_FileName());
-                ::send(client, response, 2048, 0);
+                ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 break;
             default:
                 std::cerr << "Error: Invalid command" << std::endl;
                 break;
         }
+        std::cout << "ID " << client << ": Done" << std::endl;
     };
 
     std::thread clientThread(packetParsing, clientFD);
-    std::cout << "ID " << clientFD << ": Done" << std::endl;
+    std::move(clientThread).detach();
+    // clientThread.detach();
+    // threads_.push(clientThread);
 
-    clientThread.join();
     return 0;
 }
 
-// void Server::parsePacket(int clientFD) 
-// {
-//     char buffer[MAX_SIZE_PACKET];
-//     ::recv(clientFD, buffer, MAX_SIZE_PACKET, 0);
+int Server::checkClientAuthentication(int client, char* username, char* password) {
+    std::ifstream file;
+    std::string line;
+    char filePath[MAX_SIZE_MESSAGE];
 
-//     FTP_Packet newPacket = *(FTP_Packet*) buffer;
+    snprintf(filePath, sizeof(filePath), "%s/very_safe_trust_me_bro.txt", DESTINATION_PATH);
+    file.open(filePath, std::ios::in);
 
-//     if (strcmp(newPacket.get_Command(), "-upload") == 0)
-//     {
-//         recvClientUpload(newPacket);
-//     }
-//     else if (strcmp(newPacket.get_Command(), "-download") == 0)
-//     {
+    if (file.is_open()) 
+    {
+        while(std::getline(file, line)) 
+        {
+            char* buffer = (char*) line.c_str();
+            char usernameLine[MAX_SIZE_USER];
+            char passwordLine[MAX_SIZE_USER]; 
+
+            buffer = std::strtok(buffer, ":");
+            strcpy(usernameLine, buffer);
+            buffer = std::strtok(NULL, "");
+            strcpy(passwordLine, buffer);
+
+            if (strcmp(usernameLine, username) == 0 && strcmp(passwordLine, password) == 0)
+            {
+                ::send(client, "OK", MAX_SIZE_MESSAGE, 0);
+                file.close();
+                return 0;
+            }
+            else if (strcmp(usernameLine, username) == 0 && strcmp(passwordLine, password) != 0) 
+            {
+                ::send(client, "Invalid password", MAX_SIZE_MESSAGE, 0);            
+                file.close();
+                return -1;
+            }
+        }
+        std::cout << "User not found" << std::endl;
+        file.close();
+        if (createNewUser(username, password, filePath) == 0) {
+            ::send(client, "User not found, new account created with the entered password", MAX_SIZE_MESSAGE, 0);
+            std::cout << "User not found, new account created with the entered password" << std::endl;
+        }
+        else
+        {
+            return -1;
+        }
         
-//     }
-//     else if (strcmp(newPacket.get_Command(), "-delete") == 0)
-//     {
-        
-//     }
-//     else
-//     {
-//         std::cerr << "Error: Invalid command" << std::endl;
-//     }
-// }
+    }
+    else
+    {
+        std::cerr << "Error: File not found" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+int Server::createNewUser(char* username, char* password, char* authPath) {
+    std::ofstream file;
+    std::string line;
+
+    file.open(authPath, std::ios::app);
+
+    if (file.is_open()) 
+    {
+        file << username << ":" << password << std::endl;
+        file.close();
+    }
+    else
+    {
+        std::cerr << "Error: File not found" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
 
 int Server::accept()
 {
@@ -163,18 +234,9 @@ int Server::accept()
     int addrlen = sizeof(sinAddress_);
     return ::accept(serverSocket, (struct sockaddr *)&sinAddress_, (socklen_t *)&addrlen);
 }
-int Server::getMasterFD() { return masterFD_; }
-int Server::getClientFD() { return clientFD_; }
-int Server::getActivity() { return activity_; }
-int Server::getAddrlen() { return addrlen_; }
-int Server::getMaxClients() { return maxClients_; }
-// std::vector<int> Server::getClients() { return clients_; }
-fd_set Server::getReadfds() { return readfds_; }
 
-void Server::setMasterFD(int masterFD) { masterFD_ = masterFD;}
-void Server::setClientFD(int clientFD) { clientFD_ = clientFD;}
-void Server::setActivity(int activity) { activity_ = activity; }
+int Server::getAddrlen() { return addrlen_; }
+// std::queue<std::thread> Server::getClients() { return threads_; }
+
 void Server::setAddrlen(int addrlen) { addrlen_ = addrlen; }
-void Server::setMaxClients(int maxClients) { maxClients_ = maxClients; }
-// void Server::setClients(std::vector<int> clients) { clients_ = clients; }
-void Server::setReadfds(fd_set readfds) { readfds_ = readfds; }
+// void Server::setClientsThread(std::queue<std::thread> threadQueue) { threads_ = threadQueue; }

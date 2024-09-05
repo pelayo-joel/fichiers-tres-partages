@@ -1,5 +1,33 @@
 #include "../classes/include/client.hpp"
 
+int clientAuthentication(int clientSocket, char* username)
+{
+    int attempts = 0;
+    char password[MAX_SIZE_USER];
+    char response[MAX_SIZE_MESSAGE];
+    char userAuthentication[MAX_SIZE_USER * 2 + 1];
+    
+    do
+    {
+        std::cout << "Please enter your password: ";
+        std::cin >> password;
+
+        snprintf(userAuthentication, sizeof(userAuthentication),"%s:%s", username, password);
+        ::send(clientSocket, userAuthentication, MAX_SIZE_MESSAGE, 0);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        attempts++;
+    } while (strcmp(response, "OK") != 0 && attempts < 3);
+
+
+    if (attempts == 3)
+    {
+        std::cerr << "Error: Authentication failed, bye, remember your password next time !" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+    
 int main(int argc, char *argv[])
 {
     if (argc == 0 && argc > 4)
@@ -13,12 +41,11 @@ int main(int argc, char *argv[])
 
     std::cout << "Command: " << command << std::endl;
 
-    char username[64];
+    char username[MAX_SIZE_USER];
     int port = 0;
     char serverIP[INET_ADDRSTRLEN];
-    char response[2048];
+    char response[MAX_SIZE_MESSAGE];
 
-    
     ftpServer = std::strtok(ftpServer, "@");
     strcpy(username, ftpServer);
 
@@ -33,13 +60,19 @@ int main(int argc, char *argv[])
 
     FTP_Packet packet = FTP_Packet();
 
+    if (clientAuthentication(clientSocket, username) != 0)
+    {
+        return -1;
+    }
+
+
     if (strcmp(command, "-upload") == 0) 
     {
         packet.set_Command(commands::UPLOAD);
         std::cout << "Sending: " << fileName << std::endl;
 
         client.sendFile(clientSocket, fileName, username);
-        ::recv(clientSocket, response, 2048, 0);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
     } 
     else if (strcmp(command, "-download") == 0) 
     {
@@ -57,7 +90,7 @@ int main(int argc, char *argv[])
         packet.set_FileName(fileName);
         packet.set_Username(username);
         client.deleteFileOnServer(packet);
-        ::recv(clientSocket, response, 2048, 0);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
     }
     else
     {

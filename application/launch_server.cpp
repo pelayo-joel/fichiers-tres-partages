@@ -17,12 +17,16 @@ int main(int argc, char *argv[])
     while (true)
     {
         if ((newClientFD = server.accept()) > 0) {
-            // server.recvClientUpload(newClientFD, "data/");
             server.createClientThread(newClientFD);
-            // char response[1024] = "File received by server";
-            // server.send(newClientFD, response, 0);
         }
     }
+    
+    // while (server.getClients().size() > 0)
+    // {
+    //     pthread_t clientThread = server.getClients().front();
+    //     server.getClients().pop();
+    //     pthread_join(clientThread, NULL);
+    // }
     
 
     return 0;

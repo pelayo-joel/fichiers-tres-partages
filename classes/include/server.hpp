@@ -11,10 +11,8 @@
 class Server : public FTP_Socket
 {
 private:
-    int masterFD_, clientFD_, activity_, addrlen_, maxClients_;
-    std::queue<pthread_t> clientsThread_;
-    std::queue<std::thread> threads_;
-    fd_set readfds_;
+    int addrlen_;
+    // std::queue<std::thread> threads_;
 
     int bind();
     int listen(int maxQueue);
@@ -31,20 +29,12 @@ public:
     char* createUserFolder(char* destPath, char* username);
     int recvClientUpload(FTP_Packet packet);
     int deleteFile(char* fileName, char* username);
+    int checkClientAuthentication(int client, char* username, char* password);
+    int createNewUser(char* username, char* password, char* authPath);
 
-    int getMasterFD();
-    int getClientFD();
-    int getActivity();
     int getAddrlen();
-    int getMaxClients();
-    std::queue<int> getClients();
-    fd_set getReadfds();
+    // std::queue<std::thread> getClients();
 
-    void setMasterFD(int masterFD);
-    void setClientFD(int clientFD);
-    void setActivity(int activity);
     void setAddrlen(int addrlen);
-    void setMaxClients(int maxClients);
-    void setClientsThread(std::queue<pthread_t> clientsThread);
-    void setReadfds(fd_set readfds);
+    // void setClientsThread(std::queue<std::thread> clientsThread);
 };
