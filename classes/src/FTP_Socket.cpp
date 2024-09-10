@@ -47,7 +47,6 @@ int FTP_Socket::sendFile(int socket, char* filePath, char* username)
     std::ifstream file; 
 
     file.open(filePath, std::ios::binary);
-    std::cout << "Sending file: " << filePath << std::endl;
     if(!file.is_open())
     {
         std::cerr << "Error: Could not open file " << filePath << std::endl;
@@ -73,7 +72,6 @@ int FTP_Socket::sendFile(int socket, char* filePath, char* username)
 char* FTP_Socket::recvFile(int socket)
 {
     char* buffer_ = new char[MAX_SIZE_PACKET];
-    // int bytesReceived = read(socket, buffer_, MAX_SIZE_PACKET);
     read(socket, buffer_, MAX_SIZE_PACKET);
     return buffer_;
 }

@@ -6,23 +6,18 @@ int clientAuthentication(int clientSocket, char* username)
     char response[MAX_SIZE_MESSAGE];
     char userAuthentication[MAX_SIZE_USER * 2 + 1];
 
-
-    std::cout << "Checking if user exists..." << std::endl;
     ::send(clientSocket, username, MAX_SIZE_USER, 0);
     ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
 
-    std::cout << response << std::endl;
     if (strcmp(response, "OK") != 0)
     {
         char password[MAX_SIZE_MESSAGE];
         std::cout << response;
         std::cin >> password;
 
-        // snprintf(password, sizeof(password),"%s", password);
         std::cout << password << std::endl;
         ::send(clientSocket, password, MAX_SIZE_MESSAGE, 0);
         ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
-        std::cout << response << std::endl;
     }
     else
     {
@@ -30,7 +25,6 @@ int clientAuthentication(int clientSocket, char* username)
     }
 
 
-    
     while (attempts < 3)
     {
         char password[MAX_SIZE_USER];
@@ -49,7 +43,6 @@ int clientAuthentication(int clientSocket, char* username)
         
         attempts++;
     }
-    std::cout << attempts << std::endl;
 
     if (attempts >= 3)
     {
@@ -70,8 +63,6 @@ int main(int argc, char *argv[])
     char* ftpServer = argv[1];
     char* command = argv[2];
     char* fileName = argv[3];
-
-    std::cout << "Command: " << command << std::endl;
 
     char username[MAX_SIZE_USER];
     int port = 0;
@@ -102,7 +93,6 @@ int main(int argc, char *argv[])
     if (strcmp(command, "-upload") == 0) 
     {
         packet.set_Command(commands::UPLOAD);
-        std::cout << "Sending: " << fileName << std::endl;
 
         client.sendFile(clientSocket, fileName, username);
         ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);

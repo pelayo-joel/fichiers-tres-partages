@@ -79,7 +79,6 @@ int Server::recvClientUpload(FTP_Packet packet)
 
     char* userPath = createUserFolder(packet.get_Username());
     strcpy(filePath, pathToReceivedFile(userPath, packet.get_FileName()));
-    std::cout << "File path: " << filePath << ", Filename: " << packet.get_FileName() << std::endl;
 
     file.open(filePath, std::ios::out);
     file.write(packet.get_RawData(), packet.get_FileSize());
@@ -112,7 +111,6 @@ int Server::createClientThread(int clientFD)
         char usernameCheck[MAX_SIZE_USER];
 
         ::recv(client, usernameCheck, MAX_SIZE_USER, 0);
-        std::cout << "UsernameCheck: " << usernameCheck << std::endl;
 
         if (checkUserExists(usernameCheck) != 0)
         {
@@ -153,7 +151,6 @@ int Server::createClientThread(int clientFD)
             strcpy(password, credentials);
 
             authenticationStatus = checkClientAuthentication(client, username, password);
-            std::cout << "Authentication status: " << authenticationStatus << std::endl;
             if (authenticationStatus == 0)
             {
                 break;
@@ -175,7 +172,6 @@ int Server::createClientThread(int clientFD)
         switch (newPacket.get_Command())
         {
             case commands::UPLOAD:
-                std::cout << "File " << newPacket.get_FileName() << ": Uploading file" << std::endl;
                 recvClientUpload(newPacket);
                 snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
@@ -286,7 +282,6 @@ int Server::checkClientAuthentication(int client, char* username, char* password
             char usernameLine[MAX_SIZE_USER];
             char passwordLine[MAX_SIZE_USER]; 
 
-            std::cout << "Line : " << buffer << std::endl;
             buffer = std::strtok(buffer, ":");
             strcpy(usernameLine, buffer);
             buffer = std::strtok(NULL, "");
