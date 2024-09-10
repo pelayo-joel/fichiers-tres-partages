@@ -12,7 +12,9 @@
 #include <cstdint>
 
 #define MAX_SIZE_PACKET 65536
-
+#define MAX_SIZE_USER 64
+#define MAX_SIZE_MESSAGE 128
+#define MAX_SIZE_BUFFER 512
 
 enum commands
 {
@@ -27,10 +29,9 @@ class FTP_Packet
 private:
     // Header
     ssize_t fileSize;
-    char fileName[128];
-    char userName[64];
+    char fileName[MAX_SIZE_MESSAGE];
+    char userName[MAX_SIZE_USER];
     commands command;
-    // char command[32];
     
     // Data
     char rawData[MAX_SIZE_PACKET];
@@ -52,6 +53,4 @@ public:
     void set_Username(char* newName);
     void set_RawData(void* data);
     void set_Command(commands newCommand);
-
-    // char* pathParsing(char* filePath);
 };

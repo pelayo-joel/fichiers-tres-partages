@@ -47,7 +47,6 @@ int FTP_Socket::sendFile(int socket, char* filePath, char* username)
     std::ifstream file; 
 
     file.open(filePath, std::ios::binary);
-
     if(!file.is_open())
     {
         std::cerr << "Error: Could not open file " << filePath << std::endl;
@@ -73,7 +72,7 @@ int FTP_Socket::sendFile(int socket, char* filePath, char* username)
 char* FTP_Socket::recvFile(int socket)
 {
     char* buffer_ = new char[MAX_SIZE_PACKET];
-    int bytesReceived = read(socket, buffer_, MAX_SIZE_PACKET);
+    read(socket, buffer_, MAX_SIZE_PACKET);
     return buffer_;
 }
 
@@ -88,24 +87,6 @@ char* FTP_Socket::pathToReceivedFile(char* folderPath, char* fileName) {
 
     filePath[strLen] = '\0';
     return filePath;
-}
-
-char* FTP_Socket::createDestinationFolder(char* destPath)
-{
-    std::string mainFolder = destPath;
-    auto strLen = mainFolder.length();
-
-    char* fullPath = new char[strLen + 2];
-
-    if (!std::filesystem::exists(mainFolder))
-    {
-        std::filesystem::create_directory(mainFolder);
-    }
-
-    std::memcpy(fullPath, mainFolder.c_str(), strLen);
-
-    fullPath[strLen] = '\0';
-    return fullPath;
 }
 
 int FTP_Socket::get_socketFD() { return socketFD_; }
