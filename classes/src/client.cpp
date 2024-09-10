@@ -31,7 +31,7 @@ int Client::connect()
 
 int Client::recvServerDownload() 
 {
-    char filePath[256];
+    char filePath[MAX_SIZE_MESSAGE];
     char* buffer = recvFile(this->get_socketFD()); 
     std::ofstream file;
 

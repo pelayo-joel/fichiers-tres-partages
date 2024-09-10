@@ -14,6 +14,7 @@
 
 #include "FTP_Packet.hpp"
 
+
 class FTP_Socket
 {
 private:
@@ -21,7 +22,6 @@ private:
 
 protected:
     struct sockaddr_in sinAddress_;
-    // char* pathToReceivedFile(char* fileName);
     char* createDestinationFolder(char* username, char* destPath);
     char* recvFile(int clientSocket);
 
@@ -36,8 +36,6 @@ public:
     int sendFile(int clientSocket, char* filePath, char* username);
 
     char* pathToReceivedFile(char* folderPath, char* fileName);
-    char* createDestinationFolder(char* destPath);
-    // int deleteFile(char* fileName, char* username);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();

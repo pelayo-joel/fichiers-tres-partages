@@ -3,23 +3,55 @@
 int clientAuthentication(int clientSocket, char* username)
 {
     int attempts = 0;
-    char password[MAX_SIZE_USER];
     char response[MAX_SIZE_MESSAGE];
     char userAuthentication[MAX_SIZE_USER * 2 + 1];
-    
-    do
+
+
+    std::cout << "Checking if user exists..." << std::endl;
+    ::send(clientSocket, username, MAX_SIZE_USER, 0);
+    ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+
+    std::cout << response << std::endl;
+    if (strcmp(response, "OK") != 0)
     {
+        char password[MAX_SIZE_MESSAGE];
+        std::cout << response;
+        std::cin >> password;
+
+        // snprintf(password, sizeof(password),"%s", password);
+        std::cout << password << std::endl;
+        ::send(clientSocket, password, MAX_SIZE_MESSAGE, 0);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
+    }
+    else
+    {
+        std::cout << "Welcome back " << username << std::endl;
+    }
+
+
+    
+    while (attempts < 3)
+    {
+        char password[MAX_SIZE_USER];
+        strcpy(response, "");
         std::cout << "Please enter your password: ";
         std::cin >> password;
 
         snprintf(userAuthentication, sizeof(userAuthentication),"%s:%s", username, password);
         ::send(clientSocket, userAuthentication, MAX_SIZE_MESSAGE, 0);
         ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
+        if (strcmp(response, "OK") == 0)
+        {
+            break;
+        }
+        
         attempts++;
-    } while (strcmp(response, "OK") != 0 && attempts < 3);
+    }
+    std::cout << attempts << std::endl;
 
-
-    if (attempts == 3)
+    if (attempts >= 3)
     {
         std::cerr << "Error: Authentication failed, bye, remember your password next time !" << std::endl;
         return -1;
@@ -62,6 +94,7 @@ int main(int argc, char *argv[])
 
     if (clientAuthentication(clientSocket, username) != 0)
     {
+        close(clientSocket);
         return -1;
     }
 
