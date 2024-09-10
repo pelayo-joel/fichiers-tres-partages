@@ -1,6 +1,5 @@
 #pragma once
 
-#include <pthread.h>
 #include <thread>
 #include <queue>
 #include <csignal>
@@ -35,5 +34,4 @@ public:
     int checkClientAuthentication(int client, char* username, char* password);
     int createNewUser(char* username, char* password);
     void static handleLeave(int signal);
-
 };

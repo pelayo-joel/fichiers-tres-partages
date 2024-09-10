@@ -33,3 +33,9 @@
 *.bin
 
 .vscode
+.idea
+data/*/*
+logs/** */
+
+/lpf_server
+/lpf
