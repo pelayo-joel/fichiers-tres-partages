@@ -43,7 +43,9 @@ ssize_t FTP_Socket::send(int socket, void *buffer, int flag)
 
 int FTP_Socket::sendFile(int socket, char* filePath, const int64_t fileSize)
 {
+
     std::ifstream file(filePath, std::ifstream::binary);
+
     if(!file.is_open())
     {
         std::cerr << "Error: Could not open file " << filePath << std::endl;

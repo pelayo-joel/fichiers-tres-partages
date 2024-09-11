@@ -9,7 +9,7 @@
 
 #define IP_ADDRESS "127.0.0.1"
 #define PORT 3000
-#define DESTINATION_PATH "data/"
+// #define DESTINATION_PATH "data/"s
 
 class Server : public FTP_Socket
 {
@@ -27,9 +27,12 @@ public:
 
     int accept();
     int createClientThread(int clientFD);
-    char* createUserFolder(char* username);
+    char* createFolder(char* username, const char* foldername, const char* path);
     int recvClientUpload(int socket, FTP_Packet packet);
     int deleteFile(char* fileName, char* username);
+    void displayList(int client, char* username, const char* path);
+    void deleteFolder(int client, char* username, const char* path);
+    int renameFolder(int client, char* username, const char* oldPath, const char* newFolderName);
     int checkUserExists(char* username);
     int checkClientAuthentication(int client, char* username, char* password);
     int createNewUser(char* username, char* password);

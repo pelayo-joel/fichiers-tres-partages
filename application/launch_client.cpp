@@ -62,8 +62,15 @@ int main(int argc, char *argv[])
     }
     char* ftpServer = argv[1];
     char* command = argv[2];
-    char* fileName = argv[3];
+    char* fileName;
+    char* folderName;
+    char* path;
 
+    // if (argc == 5) 
+    // {
+    //     path = argv[4];
+    // }
+    
     char username[MAX_SIZE_USER];
     int port = 0;
     char serverIP[INET_ADDRSTRLEN];
@@ -92,6 +99,7 @@ int main(int argc, char *argv[])
 
     if (strcmp(command, "-upload") == 0) 
     {
+        fileName = argv[3];
         packet.set_Command(command::UPLOAD);
         packet.set_FileName(fileName);
         packet.set_FileSize(client.getFileSize(fileName));
@@ -103,6 +111,7 @@ int main(int argc, char *argv[])
     } 
     else if (strcmp(command, "-download") == 0) 
     {
+        fileName = argv[3];
         packet.set_Command(command::DOWNLOAD);
         packet.set_FileName(fileName);
         packet.set_Username(username);
@@ -113,12 +122,97 @@ int main(int argc, char *argv[])
     } 
     else if (strcmp(command, "-delete") == 0) 
     {
+
+        fileName = argv[3];
+        packet.set_Path(fileName);
         packet.set_Command(command::DELETE);
         packet.set_FileName(fileName);
         packet.set_Username(username);
-        client.deleteFileOnServer(packet);
+        client.sendPacket(packet);
+
         ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
     }
+    else if (strcmp(command, "-list") == 0) 
+    {
+        char listMessage[MAX_SIZE_BUFFER];
+        if (argc == 4)
+        {
+            path = argv[3];
+        }
+        packet.set_Command(commands::LIST);
+        packet.set_Username(username);
+        if (path != nullptr && strlen(path) > 0)
+        {
+            packet.set_Path(path);
+        }
+
+        client.sendPacket(packet);
+
+        ::recv(clientSocket, listMessage, MAX_SIZE_BUFFER, 0);
+        std::cout << listMessage << std::endl;
+    }
+    else if (strcmp(command, "-create") == 0) 
+    {
+        folderName = argv[3];
+        if (argc == 5)
+        {
+            path = argv[4];
+        }
+
+        if (strcmp(folderName, "") != 0)
+        {
+            packet.set_Command(commands::CREATE);
+            packet.set_Username(username);
+            packet.set_FolderName(folderName);
+            if (path != nullptr && strlen(path) > 0)
+            {
+                packet.set_Path(path);
+            }
+
+            client.sendPacket(packet);
+            ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+            std::cout << response << std::endl;
+        }
+        else 
+        {
+            std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-create> <foldername> <path>" << std::endl;
+            return -1;
+        }
+    }
+    else if (strcmp(command, "-rm") == 0) 
+    {
+        if (argc == 4)
+        {
+            path = argv[3];
+        }
+        else 
+        {
+            std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-rm> <path>" << std::endl;
+            return -1;
+        }
+
+        packet.set_Command(commands::RM);
+        packet.set_Username(username);
+        packet.set_Path(path);
+        client.sendPacket(packet);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
+    }
+    else if (strcmp(command, "-rename") == 0)
+    {
+        folderName = argv[3];
+        path = argv[4];
+        
+        packet.set_Command(commands::RENAME);
+        packet.set_Username(username);
+        packet.set_FolderName(folderName);
+        packet.set_Path(path);
+        client.sendPacket(packet);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
+    }
+    
     else
     {
         std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-download|-upload|-delete> <filepath>" << std::endl;
