@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     {
         fileName = argv[3];
         packet.set_Command(commands::DELETE);
-        packet.set_FileName(fileName);
+        packet.set_Path(fileName);
         packet.set_Username(username);
         client.sendPacket(packet);
 
@@ -194,6 +194,20 @@ int main(int argc, char *argv[])
         ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
         std::cout << response << std::endl;
     }
+    else if (strcmp(command, "-rename") == 0)
+    {
+        folderName = argv[3];
+        path = argv[4];
+        
+        packet.set_Command(commands::RENAME);
+        packet.set_Username(username);
+        packet.set_FolderName(folderName);
+        packet.set_Path(path);
+        client.sendPacket(packet);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
+    }
+    
     else
     {
         std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-download|-upload|-delete> <filepath>" << std::endl;

@@ -32,6 +32,7 @@ public:
     int deleteFile(char* fileName, char* username);
     void displayList(int client, char* username, const char* path);
     void deleteFolder(int client, char* username, const char* path);
+    int renameFolder(int client, char* username, const char* oldPath, const char* newFolderName);
     int checkUserExists(char* username);
     int checkClientAuthentication(int client, char* username, char* password);
     int createNewUser(char* username, char* password);
