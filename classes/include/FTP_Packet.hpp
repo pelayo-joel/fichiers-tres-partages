@@ -11,12 +11,15 @@
 #include <sys/time.h>
 #include <cstdint>
 
-#define MAX_SIZE_PACKET 65536
+#define PACKET_SIZE sizeof(FTP_Packet)
 #define MAX_SIZE_USER 64
 #define MAX_SIZE_MESSAGE 128
 #define MAX_SIZE_BUFFER 512
 
-enum commands
+#define BUFFER_CHUNK_SIZE 1024
+#define CHUNK_SIZE 16 * 1024
+
+enum command
 {
     UPLOAD,
     DOWNLOAD,
@@ -28,13 +31,13 @@ class FTP_Packet
 {
 private:
     // Header
-    ssize_t fileSize;
+    int64_t fileSize;
     char fileName[MAX_SIZE_MESSAGE];
     char userName[MAX_SIZE_USER];
-    commands command;
+    command command_;
     
     // Data
-    char rawData[MAX_SIZE_PACKET];
+    // char rawData[MAX_SIZE_PACKET];
     
 public:
     FTP_Packet();
@@ -43,14 +46,14 @@ public:
     FTP_Packet &operator=(const FTP_Packet &other);
 
     char* get_FileName();
-    ssize_t get_FileSize();
+    int64_t get_FileSize();
     char* get_Username();
-    char* get_RawData();
-    commands get_Command();
+    // char* get_RawData();
+    command get_Command();
 
     void set_FileName(char* newName);
-    void set_FileSize(ssize_t newSize);
+    void set_FileSize(const int64_t newSize);
     void set_Username(char* newName);
-    void set_RawData(void* data);
-    void set_Command(commands newCommand);
+    // void set_RawData(void* data);
+    void set_Command(command newCommand);
 };

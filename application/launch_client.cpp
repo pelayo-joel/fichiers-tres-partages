@@ -92,24 +92,28 @@ int main(int argc, char *argv[])
 
     if (strcmp(command, "-upload") == 0) 
     {
-        packet.set_Command(commands::UPLOAD);
+        packet.set_Command(command::UPLOAD);
+        packet.set_FileName(fileName);
+        packet.set_FileSize(client.getFileSize(fileName));
+        packet.set_Username(username);
 
-        client.sendFile(clientSocket, fileName, username);
+        ::send(clientSocket, &packet, sizeof(FTP_Packet), 0);
+        client.sendFile(clientSocket, fileName, packet.get_FileSize());
         ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
     } 
     else if (strcmp(command, "-download") == 0) 
     {
-        packet.set_Command(commands::DOWNLOAD);
+        packet.set_Command(command::DOWNLOAD);
         packet.set_FileName(fileName);
         packet.set_Username(username);
 
-        client.send(clientSocket, &packet, 0);
+        ::send(clientSocket, &packet, sizeof(FTP_Packet), 0);
         client.recvServerDownload();
         std::cout << "Downloaded in '" << DESTINATION_PATH << "': " << fileName << std::endl;
     } 
     else if (strcmp(command, "-delete") == 0) 
     {
-        packet.set_Command(commands::DELETE);
+        packet.set_Command(command::DELETE);
         packet.set_FileName(fileName);
         packet.set_Username(username);
         client.deleteFileOnServer(packet);

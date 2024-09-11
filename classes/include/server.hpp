@@ -28,7 +28,7 @@ public:
     int accept();
     int createClientThread(int clientFD);
     char* createUserFolder(char* username);
-    int recvClientUpload(FTP_Packet packet);
+    int recvClientUpload(int socket, FTP_Packet packet);
     int deleteFile(char* fileName, char* username);
     int checkUserExists(char* username);
     int checkClientAuthentication(int client, char* username, char* password);

@@ -32,18 +32,16 @@ int Client::connect()
 int Client::recvServerDownload() 
 {
     char filePath[MAX_SIZE_MESSAGE];
-    char* buffer = recvFile(this->get_socketFD()); 
-    std::ofstream file;
+    char buffer[PACKET_SIZE];
 
+    ::recv(this->get_socketFD(), buffer, PACKET_SIZE, 0); 
     FTP_Packet packetDownload = *(FTP_Packet*) buffer;
 
     strcpy(filePath, DESTINATION_PATH);
     strcat(filePath, packetDownload.get_FileName());
 
-    file.open(filePath, std::ios::out);
-    file.write(packetDownload.get_RawData(), packetDownload.get_FileSize());
+    RecvFile(this->get_socketFD(), filePath, packetDownload.get_FileSize());
 
-    file.close();
     return 0;
 }
 
