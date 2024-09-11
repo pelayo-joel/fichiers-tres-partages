@@ -65,6 +65,10 @@ char* Server::createFolder(char* username, const char* foldername, const char* p
     {
         std::filesystem::create_directory(userFolder);
     }
+    else 
+    {
+        return nullptr;
+    }
 
     auto strLen = userFolder.length();
     char* userFolderPath = new char[strLen + 2];
@@ -103,9 +107,30 @@ int Server::deleteFile(char* fileName, char* username)
     return status;
 }
 
+void Server::displayList(int client, char* username, const char* path) 
+{
+    std::string rootList = std::string(DESTINATION_PATH) + username;
+
+    if (strcmp(path, "") != 0)
+    {
+        rootList += std::string("/") + std::string(path);
+    }
+
+    char list[MAX_SIZE_BUFFER] = "";
+
+    for (const auto & entry : std::filesystem::directory_iterator(rootList))
+    {
+        std::string entryPath = entry.path().string();
+        entryPath += "\n";
+        entryPath = entryPath.substr(rootList.length() + 1, entryPath.length());
+        strcat(list, entryPath.c_str()); 
+    }
+    ::send(client, list, MAX_SIZE_BUFFER, 0);
+
+}
+
 int Server::createClientThread(int clientFD)
 {
-
     auto packetParsing = [this](int client) {
         char buffer[MAX_SIZE_PACKET];
         char response[MAX_SIZE_MESSAGE];
@@ -197,17 +222,31 @@ int Server::createClientThread(int clientFD)
                 logger.EventLog(9, "File deleted: " + std::string(response));
                 break;
             case commands::LIST:
+                displayList(client, newPacket.get_Username(), newPacket.get_Path());
+                std::cout << "After function" << std::endl;
                 break;
-            case commands::CREATE:
-                createFolder(newPacket.get_Username(), newPacket.get_FolderName(), newPacket.get_Path());
-                snprintf(response, sizeof(response), "Folder '%s' successfully created on the ftp-server", newPacket.get_FolderName());
+            case commands::CREATE: 
+            {
+                char* folderStatus = createFolder(newPacket.get_Username(), newPacket.get_FolderName(), newPacket.get_Path());
+                if (folderStatus == nullptr)
+                {
+                    snprintf(response, sizeof(response), "Folder '%s' already exists !", newPacket.get_FolderName());
+                }
+                else 
+                {
+                    snprintf(response, sizeof(response), "Folder '%s' successfully created on the ftp-server", newPacket.get_FolderName());
+                }
+
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 break;
+            }
+                
             default:
                 std::cerr << "Error: Invalid command" << std::endl;
                 break;
         }
         std::cout << "ID " << client << ": Done" << std::endl;
+        return 0;
     };
 
     std::thread clientThread(packetParsing, clientFD);

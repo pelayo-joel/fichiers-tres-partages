@@ -30,6 +30,7 @@ public:
     char* createFolder(char* username, const char* foldername, const char* path);
     int recvClientUpload(FTP_Packet packet);
     int deleteFile(char* fileName, char* username);
+    void displayList(int client, char* username, const char* path);
     int checkUserExists(char* username);
     int checkClientAuthentication(int client, char* username, char* password);
     int createNewUser(char* username, char* password);

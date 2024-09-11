@@ -1,3 +1,0 @@
-foldertest:folder
-foldertest2:test
-foldertest3:test
