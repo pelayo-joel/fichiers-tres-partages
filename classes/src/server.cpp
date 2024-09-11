@@ -66,6 +66,7 @@ char* Server::createFolder(char* username, const char* foldername, const char* p
         if (std::filesystem::exists(checkPath)) 
         {
             newFolder = userFolder + std::string(path) + std::string("/") + std::string(foldername) + std::string("/");
+            std::cout << "New folder: " << newFolder << std::endl;
         }
         else 
         {
@@ -135,7 +136,7 @@ int Server::deleteFile(char* fileName, char* username)
 void Server::displayList(int client, char* username, const char* path) 
 {
     std::string rootList = std::string(DESTINATION_PATH) + username;
-
+    std::cout << "path: " << path << std::endl;
     if (strcmp(path, "") != 0)
     {
         rootList += std::string("/") + std::string(path);
@@ -170,7 +171,7 @@ int Server::renameFolder(int client, char* username, const char* oldPath, const 
     std::cout << "New path: " << newPath << std::endl;
 
     std::filesystem::rename(completePath, newPath);
-    // ::send(client, "Folder renamed", MAX_SIZE_MESSAGE, 0);
+    ::send(client, "Folder renamed", MAX_SIZE_MESSAGE, 0);
     return 0;
 }
 
@@ -272,11 +273,10 @@ int Server::createClientThread(int clientFD)
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 logger.EventLog(9, "File deleted: " + std::string(response));
                 break;
-            case commands::LIST:
+            case command::LIST:
                 displayList(client, newPacket.get_Username(), newPacket.get_Path());
-                std::cout << "After function" << std::endl;
                 break;
-            case commands::CREATE: 
+            case command::CREATE: 
             {
                 char* folderStatus = createFolder(newPacket.get_Username(), newPacket.get_FolderName(), newPacket.get_Path());
                 if (folderStatus == nullptr)
@@ -291,10 +291,10 @@ int Server::createClientThread(int clientFD)
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 break;
             }
-            case commands::RM:
+            case command::RM:
                 deleteFolder(client, newPacket.get_Username(), newPacket.get_Path());
                 break; 
-            case commands::RENAME:
+            case command::RENAME:
             {
                 renameFolder(client, newPacket.get_Username(), newPacket.get_Path(), newPacket.get_FolderName());
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);

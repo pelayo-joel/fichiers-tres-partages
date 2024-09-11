@@ -1,11 +1,5 @@
-ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 8
+ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 2
 
 ******* DEBUG *******
-2024-09-11 11:02:54		DEBUG		Servers listens on port 3000
-2024-09-11 11:03:09		DEBUG		Client thread started: 4
-2024-09-11 11:03:11		DEBUG		User folder created: data//
-2024-09-11 11:03:19		DEBUG		Client thread started: 5
-2024-09-11 11:03:21		DEBUG		User folder created: data/joel/
-2024-09-11 11:03:21		DEBUG		File uploaded to server: data/joel/red-sun.png
-2024-09-11 11:03:21		DEBUG		File uploaded to server: File 'red-sun.png' successfully uploaded on the ftp-server
-2024-09-11 11:03:27		DEBUG		Leaving...
+2024-09-11 17:32:05		DEBUG		Servers listens on port 3000
+2024-09-11 17:32:32		DEBUG		Leaving...

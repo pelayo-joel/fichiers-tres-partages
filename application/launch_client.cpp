@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     char* command = argv[2];
     char* fileName;
     char* folderName;
-    char* path;
+    char path[MAX_SIZE_MESSAGE] = "";
 
     // if (argc == 5) 
     // {
@@ -138,14 +138,11 @@ int main(int argc, char *argv[])
         char listMessage[MAX_SIZE_BUFFER];
         if (argc == 4)
         {
-            path = argv[3];
+            strcpy(path, argv[3]);
         }
-        packet.set_Command(commands::LIST);
+        packet.set_Command(command::LIST);
         packet.set_Username(username);
-        if (path != nullptr && strlen(path) > 0)
-        {
-            packet.set_Path(path);
-        }
+        packet.set_Path(path);
 
         client.sendPacket(packet);
 
@@ -157,18 +154,15 @@ int main(int argc, char *argv[])
         folderName = argv[3];
         if (argc == 5)
         {
-            path = argv[4];
+            strcpy(path, argv[4]);
         }
 
         if (strcmp(folderName, "") != 0)
         {
-            packet.set_Command(commands::CREATE);
+            packet.set_Command(command::CREATE);
             packet.set_Username(username);
             packet.set_FolderName(folderName);
-            if (path != nullptr && strlen(path) > 0)
-            {
-                packet.set_Path(path);
-            }
+            packet.set_Path(path);
 
             client.sendPacket(packet);
             ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
@@ -184,7 +178,7 @@ int main(int argc, char *argv[])
     {
         if (argc == 4)
         {
-            path = argv[3];
+            strcpy(path, argv[3]);
         }
         else 
         {
@@ -192,7 +186,7 @@ int main(int argc, char *argv[])
             return -1;
         }
 
-        packet.set_Command(commands::RM);
+        packet.set_Command(command::RM);
         packet.set_Username(username);
         packet.set_Path(path);
         client.sendPacket(packet);
@@ -202,9 +196,10 @@ int main(int argc, char *argv[])
     else if (strcmp(command, "-rename") == 0)
     {
         folderName = argv[3];
-        path = argv[4];
+        // path = argv[4];
+        strcpy(path, argv[4]);
         
-        packet.set_Command(commands::RENAME);
+        packet.set_Command(command::RENAME);
         packet.set_Username(username);
         packet.set_FolderName(folderName);
         packet.set_Path(path);
