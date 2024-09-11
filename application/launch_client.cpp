@@ -175,6 +175,25 @@ int main(int argc, char *argv[])
             return -1;
         }
     }
+    else if (strcmp(command, "-rm") == 0) 
+    {
+        if (argc == 4)
+        {
+            path = argv[3];
+        }
+        else 
+        {
+            std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-rm> <path>" << std::endl;
+            return -1;
+        }
+
+        packet.set_Command(commands::RM);
+        packet.set_Username(username);
+        packet.set_Path(path);
+        client.sendPacket(packet);
+        ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
+    }
     else
     {
         std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-download|-upload|-delete> <filepath>" << std::endl;

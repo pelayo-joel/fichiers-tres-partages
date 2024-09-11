@@ -53,31 +53,55 @@ int Server::accept()
 char* Server::createFolder(char* username, const char* foldername, const char* path) 
 {
     std::string mainFolder = DESTINATION_PATH;
-    std::string userFolder = std::string(DESTINATION_PATH) + username + "/" + path + "/" + foldername;
+    std::string newFolder;
+    std::string userFolder = std::string(DESTINATION_PATH) + username + "/";
 
+    if (strcmp(foldername, "") != 0 && strcmp(path, "") == 0) 
+    {
+        newFolder = userFolder + std::string(foldername) + std::string("/");
+    }
+    else if (strcmp(foldername, "") != 0 && strcmp(path, "") != 0) 
+    {
+        std::string checkPath = userFolder + std::string(path);
+        if (std::filesystem::exists(checkPath)) 
+        {
+            newFolder = userFolder + std::string(path) + std::string("/") + std::string(foldername) + std::string("/");
+        }
+        else 
+        {
+            // PATH DOES NOT EXIST
+            return nullptr;
+        }
+    }
 
     if (!std::filesystem::exists(mainFolder))
     {
         std::filesystem::create_directory(mainFolder);
     }
 
+
     if (!std::filesystem::exists(userFolder))
     {
         std::filesystem::create_directory(userFolder);
+
+        auto strLen = userFolder.length();
+        char* userFolderPath = new char[strLen + 1];
+        std::memcpy(userFolderPath, userFolder.c_str(), strLen);
+
+        // userFolderPath[strLen] = '/';
+        userFolderPath[strLen] = '\0';
+        logger.EventLog(9, "User folder created: " + std::string(userFolderPath));
     }
-    else 
+
+    if (!std::filesystem::exists(newFolder)) 
     {
-        return nullptr;
+        std::filesystem::create_directory(newFolder);
     }
+    
+    char* completePathFolder = new char[userFolder.size() + 1];
+    std::strcpy(completePathFolder, userFolder.c_str());
 
-    auto strLen = userFolder.length();
-    char* userFolderPath = new char[strLen + 2];
-    std::memcpy(userFolderPath, userFolder.c_str(), strLen);
-
-    userFolderPath[strLen] = '/';
-    userFolderPath[strLen+1] = '\0';
-    logger.EventLog(9, "User folder created: " + std::string(userFolderPath));
-    return userFolderPath;
+    return completePathFolder;
 }
 
 
@@ -127,6 +151,14 @@ void Server::displayList(int client, char* username, const char* path)
     }
     ::send(client, list, MAX_SIZE_BUFFER, 0);
 
+}
+
+void Server::deleteFolder(int client, char* username, const char* path) 
+{
+    std::string completePath = std::string(DESTINATION_PATH) + username + "/" + path;
+    std::filesystem::remove_all(completePath);
+
+    ::send(client, "Folder deleted", MAX_SIZE_MESSAGE, 0);
 }
 
 int Server::createClientThread(int clientFD)
@@ -197,6 +229,7 @@ int Server::createClientThread(int clientFD)
 
         recv(client, buffer, 0);
         FTP_Packet newPacket = *(FTP_Packet*) buffer;
+        std::cout << "Command: " << newPacket.get_Command() << std::endl;
 
         switch (newPacket.get_Command())
         {
@@ -230,7 +263,7 @@ int Server::createClientThread(int clientFD)
                 char* folderStatus = createFolder(newPacket.get_Username(), newPacket.get_FolderName(), newPacket.get_Path());
                 if (folderStatus == nullptr)
                 {
-                    snprintf(response, sizeof(response), "Folder '%s' already exists !", newPacket.get_FolderName());
+                    snprintf(response, sizeof(response), "Folder '%s' can't be created !", newPacket.get_FolderName());
                 }
                 else 
                 {
@@ -240,7 +273,9 @@ int Server::createClientThread(int clientFD)
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 break;
             }
-                
+            case commands::RM:
+                deleteFolder(client, newPacket.get_Username(), newPacket.get_Path());
+                break; 
             default:
                 std::cerr << "Error: Invalid command" << std::endl;
                 break;

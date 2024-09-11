@@ -45,7 +45,6 @@ int FTP_Socket::sendFile(int socket, char* filePath, char* username)
 {
     FTP_Packet newPacket = FTP_Packet();
     std::ifstream file; 
-
     file.open(filePath, std::ios::binary);
     if(!file.is_open())
     {
