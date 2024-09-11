@@ -47,9 +47,10 @@ int Client::recvServerDownload()
     return 0;
 }
 
-int Client::deleteFileOnServer(FTP_Packet packet)
+int Client::sendPacket(FTP_Packet packet)
 {
     send(this->get_socketFD(), &packet, 0);
     return 0;
 }
+
 

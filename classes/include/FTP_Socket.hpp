@@ -14,6 +14,7 @@
 
 #include "FTP_Packet.hpp"
 
+#define DESTINATION_PATH "data/"
 
 class FTP_Socket
 {

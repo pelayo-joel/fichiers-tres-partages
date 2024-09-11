@@ -50,10 +50,11 @@ int Server::accept()
 }
 
 
-char* Server::createUserFolder(char* username) 
+char* Server::createFolder(char* username, const char* foldername, const char* path) 
 {
     std::string mainFolder = DESTINATION_PATH;
-    std::string userFolder = mainFolder + username;
+    std::string userFolder = std::string(DESTINATION_PATH) + username + "/" + path + "/" + foldername;
+
 
     if (!std::filesystem::exists(mainFolder))
     {
@@ -75,12 +76,13 @@ char* Server::createUserFolder(char* username)
     return userFolderPath;
 }
 
+
 int Server::recvClientUpload(FTP_Packet packet)
 {
     char filePath[MAX_SIZE_MESSAGE];
     std::ofstream file;
 
-    char* userPath = createUserFolder(packet.get_Username());
+    char* userPath = createFolder(packet.get_Username(), "", "");
     strcpy(filePath, pathToReceivedFile(userPath, packet.get_FileName()));
 
     file.open(filePath, std::ios::out);
@@ -137,7 +139,6 @@ int Server::createClientThread(int clientFD)
             ::send(client, "OK", MAX_SIZE_MESSAGE, 0);
         }
 
-        // ::recv(client, buffer, 0);
         
         while (attempts < 3)
         {
@@ -194,7 +195,13 @@ int Server::createClientThread(int clientFD)
                 snprintf(response, sizeof(response), "File '%s' successfully deleted on the ftp-server", newPacket.get_FileName());
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 logger.EventLog(9, "File deleted: " + std::string(response));
-
+                break;
+            case commands::LIST:
+                break;
+            case commands::CREATE:
+                createFolder(newPacket.get_Username(), newPacket.get_FolderName(), newPacket.get_Path());
+                snprintf(response, sizeof(response), "Folder '%s' successfully created on the ftp-server", newPacket.get_FolderName());
+                ::send(client, response, MAX_SIZE_MESSAGE, 0);
                 break;
             default:
                 std::cerr << "Error: Invalid command" << std::endl;
@@ -274,7 +281,7 @@ int Server::createNewUser(char* username, char* password) {
     {
         file << username << ":" << password << std::endl;
         file.close();
-        createUserFolder(username);
+        createFolder(username, "", "");
     }
     else
     {

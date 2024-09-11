@@ -63,7 +63,13 @@ int main(int argc, char *argv[])
     char* ftpServer = argv[1];
     char* command = argv[2];
     char* fileName = argv[3];
+    char* path;
 
+    if (argc == 5) 
+    {
+        path = argv[4];
+    }
+    
     char username[MAX_SIZE_USER];
     int port = 0;
     char serverIP[INET_ADDRSTRLEN];
@@ -112,8 +118,32 @@ int main(int argc, char *argv[])
         packet.set_Command(commands::DELETE);
         packet.set_FileName(fileName);
         packet.set_Username(username);
-        client.deleteFileOnServer(packet);
+        client.sendPacket(packet);
         ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+        std::cout << response << std::endl;
+        
+    }
+    else if (strcmp(command, "-create") == 0) 
+    {
+        if (strcmp(fileName, "") != 0)
+        {
+            packet.set_Command(commands::CREATE);
+            packet.set_Username(username);
+            packet.set_FolderName(fileName);
+            if (path != nullptr && strlen(path) > 0)
+            {
+                packet.set_Path(path);
+            }
+
+            client.sendPacket(packet);
+            ::recv(clientSocket, response, MAX_SIZE_MESSAGE, 0);
+            std::cout << response << std::endl;
+        }
+        else 
+        {
+            std::cerr << "Usage : " << argv[0] << " <username@ftp_serverIP:port> <-create> <foldername> <path>" << std::endl;
+            return -1;
+        }
     }
     else
     {

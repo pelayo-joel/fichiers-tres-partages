@@ -20,7 +20,11 @@ enum commands
 {
     UPLOAD,
     DOWNLOAD,
-    DELETE
+    DELETE,
+    LIST,
+    CREATE,
+    RM,
+    RENAME
 };
 
 
@@ -31,6 +35,8 @@ private:
     ssize_t fileSize;
     char fileName[MAX_SIZE_MESSAGE];
     char userName[MAX_SIZE_USER];
+    char folderName[MAX_SIZE_MESSAGE];
+    char path[MAX_SIZE_MESSAGE];
     commands command;
     
     // Data
@@ -45,12 +51,16 @@ public:
     char* get_FileName();
     ssize_t get_FileSize();
     char* get_Username();
+    char* get_FolderName();
+    char* get_Path();
     char* get_RawData();
     commands get_Command();
 
     void set_FileName(char* newName);
     void set_FileSize(ssize_t newSize);
     void set_Username(char* newName);
+    void set_FolderName(char* newName);
+    void set_Path(char* newPath);
     void set_RawData(void* data);
     void set_Command(commands newCommand);
 };
