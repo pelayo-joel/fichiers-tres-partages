@@ -109,17 +109,14 @@ char* Server::createFolder(char* username, const char* foldername, const char* p
 }
 
 
-int Server::recvClientUpload(FTP_Packet packet)
+int Server::recvClientUpload(int socket, FTP_Packet packet)
 {
     char filePath[MAX_SIZE_MESSAGE];
-    std::ofstream file;
 
     char* userPath = createFolder(packet.get_Username(), "", "");
     strcpy(filePath, pathToReceivedFile(userPath, packet.get_FileName()));
 
-    file.open(filePath, std::ios::out);
-    file.write(packet.get_RawData(), packet.get_FileSize());
-    file.close();
+    RecvFile(socket, filePath, packet.get_FileSize());
     logger.EventLog(9, "File uploaded to server: " + std::string(filePath));
     return 0;
 }
@@ -180,7 +177,7 @@ int Server::renameFolder(int client, char* username, const char* oldPath, const 
 int Server::createClientThread(int clientFD)
 {
     auto packetParsing = [this](int client) {
-        char buffer[MAX_SIZE_PACKET];
+        char buffer[PACKET_SIZE];
         char response[MAX_SIZE_MESSAGE];
         char username[MAX_SIZE_USER];
         char password[MAX_SIZE_USER];
@@ -211,7 +208,6 @@ int Server::createClientThread(int clientFD)
         {
             ::send(client, "OK", MAX_SIZE_MESSAGE, 0);
         }
-
         
         while (attempts < 3)
         {
@@ -243,28 +239,34 @@ int Server::createClientThread(int clientFD)
             return -1;
         }
 
-        recv(client, buffer, 0);
+        ::recv(client, buffer, sizeof(FTP_Packet), 0);
         FTP_Packet newPacket = *(FTP_Packet*) buffer;
         std::cout << "Command: " << newPacket.get_Command() << std::endl;
 
+        FTP_Packet responsePacket = FTP_Packet();
         switch (newPacket.get_Command())
         {
-            case commands::UPLOAD:
-                recvClientUpload(newPacket);
-                snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
-                ::send(client, response, MAX_SIZE_MESSAGE, 0);
-                logger.EventLog(9, "File uploaded to server: " + std::string(response));
-
-                break;
-            case commands::DOWNLOAD:
-                char filePath[MAX_SIZE_MESSAGE];
-                snprintf(filePath, sizeof(filePath), "data/%s/%s", newPacket.get_Username(), newPacket.get_FileName());
-                std::cout << "filepath: " << filePath << std::endl;
-                sendFile(client, filePath, newPacket.get_Username());
-                logger.EventLog(9, "File send to the client: " + std::string(filePath));
-
-                break;
-            case commands::DELETE:
+            case command::UPLOAD:
+                {
+                    recvClientUpload(client, newPacket);
+                    snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
+                    ::send(client, response, MAX_SIZE_MESSAGE, 0);
+                    logger.EventLog(9, "File uploaded to server: " + std::string(response));
+                    break;
+                }
+            case command::DOWNLOAD:
+                {
+                    char filePath[MAX_SIZE_MESSAGE];
+                    snprintf(filePath, sizeof(filePath), "data/%s/%s", newPacket.get_Username(), newPacket.get_FileName());
+                    const int64_t fileSize = getFileSize(filePath);
+                    responsePacket.set_FileName(filePath);
+                    responsePacket.set_FileSize(fileSize);
+                    ::send(client, &responsePacket, sizeof(FTP_Packet), 0);
+                    sendFile(client, filePath, fileSize);
+                    logger.EventLog(9, "File send to the client: " + std::string(filePath));
+                    break;
+                }   
+            case command::DELETE:
                 deleteFile(newPacket.get_Path(), newPacket.get_Username());
                 snprintf(response, sizeof(response), "File '%s' successfully deleted on the ftp-server", newPacket.get_FileName());
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);

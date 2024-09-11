@@ -33,34 +33,34 @@ FTP_Socket &FTP_Socket::operator=(const FTP_Socket &other)
 
 ssize_t FTP_Socket::recv(int clientSocket, void *buffer, int flag)
 {
-    return ::recv(clientSocket, buffer, MAX_SIZE_PACKET, flag);
+    return ::recv(clientSocket, buffer, PACKET_SIZE, flag);
 }
 
 ssize_t FTP_Socket::send(int socket, void *buffer, int flag)
 {
-    return ::send(socket, buffer, MAX_SIZE_PACKET, flag);
+    return ::send(socket, buffer, PACKET_SIZE, flag);
 }
 
-int FTP_Socket::sendFile(int socket, char* filePath, char* username)
+int FTP_Socket::sendFile(int socket, char* filePath, const int64_t fileSize)
 {
-    FTP_Packet newPacket = FTP_Packet();
-    std::ifstream file; 
-    file.open(filePath, std::ios::binary);
+
+    std::ifstream file(filePath, std::ifstream::binary);
+
     if(!file.is_open())
     {
         std::cerr << "Error: Could not open file " << filePath << std::endl;
         return -1;
     }
 
-    while(!file.eof()) {
-        file.read(newPacket.get_RawData(), MAX_SIZE_PACKET);
-        int bytesRead = file.gcount();
-
-        newPacket.set_FileName(filePath);
-        newPacket.set_FileSize(bytesRead);
-        newPacket.set_Username(username);
-        ::send(socket, &newPacket, sizeof(FTP_Packet), 0);
+    char* buffer = new char[CHUNK_SIZE];
+    int64_t bytesLeft = fileSize;
+    while(bytesLeft != 0) {
+        const int64_t ssize = std::min(bytesLeft, (int64_t) CHUNK_SIZE);
+        if (!file.read(buffer, ssize)) { return -1; }
+        const int l = sendFileBuffer(socket, buffer, (int) ssize);
+        bytesLeft -= l;
     }
+    delete[] buffer;
 
     file.close();
     std::cout << "File successfully sent !" << std::endl;
@@ -68,11 +68,56 @@ int FTP_Socket::sendFile(int socket, char* filePath, char* username)
     return 0;
 }
 
+int FTP_Socket::RecvFile(int socket, char* filePath, const int64_t fileSize) {
+    std::ofstream file(filePath, std::ofstream::binary);
+    if(!file.is_open())
+    {
+        std::cerr << "Error: Could not create or open file " << filePath << std::endl;
+        return -1;
+    }
+    
+    char* buffer = new char[CHUNK_SIZE];
+    int64_t bytesLeft = fileSize;
+    while (bytesLeft != 0)
+    {
+        const int r = recvFileBuffer(socket, buffer, (int) std::min(bytesLeft, (int64_t) CHUNK_SIZE));
+        if ((r < 0) || !file.write(buffer, r)) { return -1; }
+        bytesLeft -= r;
+    }
+
+    delete[] buffer;
+    file.close();
+    return 0;
+}
+
 char* FTP_Socket::recvFile(int socket)
 {
-    char* buffer_ = new char[MAX_SIZE_PACKET];
-    read(socket, buffer_, MAX_SIZE_PACKET);
+    char* buffer_ = new char[PACKET_SIZE];
+    ::read(socket, buffer_, PACKET_SIZE);
     return buffer_;
+}
+
+
+int FTP_Socket::recvFileBuffer(int socket, char* buffer, int bufferSize) {
+    int i = 0;
+    while (i < bufferSize)
+    {
+        const int l = ::recv(socket, &buffer[i], std::min(BUFFER_CHUNK_SIZE, bufferSize - i), 0);
+        if (l < 0) { return l; }
+        i += l;
+    }
+    return i;
+}
+
+int FTP_Socket::sendFileBuffer(int socket, char* buffer, int bufferSize) {
+    int i = 0;
+    while (i < bufferSize)
+    {
+        const int l = ::send(socket, &buffer[i], std::min(BUFFER_CHUNK_SIZE, bufferSize - i), 0);
+        if (l < 0) { return l; }
+        i += l;
+    }
+    return i;
 }
 
 char* FTP_Socket::pathToReceivedFile(char* folderPath, char* fileName) {
@@ -86,6 +131,13 @@ char* FTP_Socket::pathToReceivedFile(char* folderPath, char* fileName) {
 
     filePath[strLen] = '\0';
     return filePath;
+}
+
+int64_t FTP_Socket::getFileSize(char* fileName) {
+    std::ifstream in_file(fileName, std::ios::binary);
+    in_file.seekg(0, std::ios::end);
+    int64_t len = in_file.tellg();
+    return len;
 }
 
 int FTP_Socket::get_socketFD() { return socketFD_; }
