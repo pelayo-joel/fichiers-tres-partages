@@ -33,9 +33,13 @@ public:
 
     ssize_t recv(int clientSocket, void* buffer, int flag);
     ssize_t send(int socket, void* buffer, int flag);
-    int sendFile(int clientSocket, char* filePath, char* username);
+    int RecvFile(int socket, char* filePath, const int64_t fileSize);
+    int sendFile(int clientSocket, char* filePath, const int64_t fileSize);
+    int recvFileBuffer(int socket, char* buffer, int bufferSize);
+    int sendFileBuffer(int socket, char* buffer, int bufferSize);
 
     char* pathToReceivedFile(char* folderPath, char* fileName);
+    int64_t getFileSize(char* fileName);
 
     int get_socketFD();
     struct sockaddr_in get_sinAddress();
