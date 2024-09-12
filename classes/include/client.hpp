@@ -3,6 +3,8 @@
 
 #include "FTP_Socket.hpp"
 
+#define DESTINATION_PATH "clientFiles/"
+
 
 class Client : public FTP_Socket
 {

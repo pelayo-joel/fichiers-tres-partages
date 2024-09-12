@@ -1,15 +1,13 @@
-ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 12
+ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 10
 
 ******* DEBUG *******
-2024-09-12 11:15:39		DEBUG		Servers listens on port 3000
-2024-09-12 11:15:49		DEBUG		Client thread for user :  created.
-2024-09-12 11:15:50		DEBUG		{aurore} Waiting for authentication...
-2024-09-12 11:15:50		DEBUG		User folder created: data/aurore/
-2024-09-12 11:15:50		DEBUG		{aurore} User folder created: data/aurore/
-2024-09-12 11:15:51		DEBUG		{aurore} File uploaded to server: data/aurore/test.txt
-2024-09-12 11:15:51		DEBUG		{Xÿ¿¡U} File uploaded to server: File 'test.txt' successfully uploaded on the ftp-server
-2024-09-12 11:15:51		DEBUG		Client thread for user : Xÿ¿¡U ended.
-2024-09-12 11:16:08		DEBUG		Client thread for user : Xÿ¿¡U created.
-2024-09-12 11:16:09		DEBUG		{aurore} Waiting for authentication...
-2024-09-12 11:16:09		DEBUG		Client thread for user : aurore ended.
-2024-09-12 11:51:07		DEBUG		Leaving...
+2024-09-12 16:54:46		DEBUG		Servers listens on port 3000
+2024-09-12 16:55:08		DEBUG		Client thread for user : joel created.
+2024-09-12 16:55:10		DEBUG		{joel} Waiting for authentication...
+2024-09-12 16:55:10		DEBUG		{joel} Rename folder folderTest to testFolder
+2024-09-12 16:55:10		DEBUG		Client thread for user : joel ended.
+2024-09-12 16:55:25		DEBUG		Client thread for user : joel created.
+2024-09-12 16:55:26		DEBUG		{joel} Waiting for authentication...
+2024-09-12 16:55:26		DEBUG		{joel}  Deleting folder: data/joel/testFolder
+2024-09-12 16:55:26		DEBUG		Client thread for user : joel ended.
+2024-09-12 16:55:49		DEBUG		Leaving...

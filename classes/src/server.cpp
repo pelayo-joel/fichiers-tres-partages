@@ -54,11 +54,9 @@ int Server::createClientThread(int clientFD)
 {
     auto packetParsing = [this](int client) {
         char buffer[PACKET_SIZE];
-        char response[MAX_SIZE_MESSAGE];
+        char response[MAX_SIZE_BUFFER];
         char username[MAX_SIZE_USER];
         char password[MAX_SIZE_USER];
-        int authenticationStatus = -1;
-        int attempts = 0;
         // char usernameCheck[MAX_SIZE_USER];
 
         recv(client, username);
@@ -79,79 +77,69 @@ int Server::createClientThread(int clientFD)
         switch (newPacket.get_Command())
         {
             case command::UPLOAD:
+            {
+                if (recvClientUpload(client, newPacket) != 0) 
                 {
-                    if (recvClientUpload(client, newPacket) != 0) 
-                    {
-                        return -1;
-                    }
-                    snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
-                    responsePacket.set_Message(response);
-                    break;
+                    return -1;
                 }
-            case command::DOWNLOAD:
-                {
-                    char filePath[MAX_SIZE_MESSAGE];
-                    snprintf(filePath, sizeof(filePath), "data/%s/%s", newPacket.get_Username(), newPacket.get_FileName());
-                    const int64_t fileSize = getFileSize(filePath);
-                    responsePacket.set_FileName(filePath);
-                    responsePacket.set_FileSize(fileSize);
-                    send(client, &responsePacket);
-                    sendFile(client, filePath, fileSize);
-                    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "File send to the client: " + std::string(filePath));
-                    break;
-                }   
-            case command::DELETE:
-                deleteFile(newPacket.get_Path(), newPacket.get_Username());
-                snprintf(response, sizeof(response), "File '%s' successfully deleted on the ftp-server", newPacket.get_FileName());
-                ::send(client, response, MAX_SIZE_MESSAGE, 0);
-                logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "File deleted: " + std::string(response));
-
+                snprintf(response, sizeof(response), "File '%s' successfully uploaded on the ftp-server", newPacket.get_FileName());
                 break;
+            }
+            case command::DOWNLOAD:
+            {
+                if (sendClientDownload(client, newPacket) != 0)
+                {
+                    return -1;
+                }
+                snprintf(response, sizeof(response), "File '%s' successfully downloaded from server", newPacket.get_FileName());
+                break;
+            }
+            case command::DELETE:
+            {
+                if (deleteFile(client, newPacket.get_Path(), newPacket.get_Username()) != 0)
+                {
+                    return -1;
+                }
+                snprintf(response, sizeof(response), "File '%s' successfully deleted on the ftp-server", newPacket.get_FileName());
+                break;
+            }
             case command::LIST:
+            {
                 displayList(client, newPacket.get_Username(), newPacket.get_Path());
                 break;
+            }
             case command::CREATE: 
             {
                 char* folderStatus = createFolder(newPacket.get_Username(), newPacket.get_FolderName(), newPacket.get_Path());
                 if (folderStatus == nullptr)
                 {
-                    snprintf(response, sizeof(response), "Folder '%s' can't be created !", newPacket.get_FolderName());
-                    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Folder " + std::string(newPacket.get_FolderName()) + " can't be created !");
-
+                    snprintf(response, sizeof(response), "Error: Folder '%s' can't be created on the ftp-server", newPacket.get_FolderName());
+                    send(client, response);
+                    return -1;
                 }
-                else 
-                {
-                    snprintf(response, sizeof(response), "Folder '%s' successfully created on the ftp-server", newPacket.get_FolderName());
-                    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Folder " + std::string(newPacket.get_FolderName()) + " successfully created on the ftp-server");
-
-                }
-                ::send(client, response, MAX_SIZE_MESSAGE, 0);
+                snprintf(response, sizeof(response), "Folder '%s' successfully created on the ftp-server", newPacket.get_FolderName());
                 break;
             }
             case command::RM:
+            {
                 deleteFolder(client, newPacket.get_Username(), newPacket.get_Path());
-                logger.EventLog(DEBUG, "{" + std::string(username) + "} " + " Deleting folder: " + std::string(newPacket.get_Path()));
-
+                snprintf(response, sizeof(response), "Folder '%s' successfully deleted on the ftp-server", newPacket.get_Path());
                 break; 
+            }
             case command::RENAME:
             {
                 renameFolder(client, newPacket.get_Username(), newPacket.get_Path(), newPacket.get_FolderName());
-                ::send(client, response, MAX_SIZE_MESSAGE, 0);
-                logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Rename folder " + std::string(newPacket.get_Path()) + " to " + std::string(newPacket.get_FolderName()));
-
+                snprintf(response, sizeof(response), "Folder '%s' successfully renamed to '%s' on the ftp-server", newPacket.get_Path(), newPacket.get_FolderName());
                 break;
             }
-                break;
             default:
                 std::cerr << "Error: Invalid command" << std::endl;
                 logger.EventLog(WARNING, "{" + std::string(username) + "} " + "Error: Invalid command");
                 break;
-
-
             }
         
-         send(client, responsePacket);
-
+        responsePacket.set_Message(response);
+        send(client, &responsePacket);
         std::cout << "ID " << client << ": Done" << std::endl;
         logger.EventLog(DEBUG, "Client thread for user : " + std::string(username) + " ended.");
 
@@ -161,35 +149,38 @@ int Server::createClientThread(int clientFD)
     std::thread clientThread(packetParsing, clientFD);
     std::move(clientThread).detach();
 
-
     return 0;
 }
 
 void Server::userRecognition(int clientFD, char* username) 
 {
+    char newPassword[MAX_SIZE_BUFFER];
+    char response[MAX_SIZE_BUFFER];
+
     if (checkUserExists(username) != 0)
     {
-        char newPassword[MAX_SIZE_MESSAGE];
-
-        send(clientFD, "New user detected ! Please create a password : ");
+        snprintf(response, sizeof(response), "New user detected ! Please create a password : ");
+        send(clientFD, response);
         logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "[SEND] : New user detected ! Creating password...");
         recv(clientFD, newPassword);
         
         if (createNewUser(username, newPassword) == 0) 
         {
-            send(clientFD, "User created successfully");
+            snprintf(response, sizeof(response), "User created successfully");
+            send(clientFD, response);
             logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "[SEND] : User created successfully");
         }
         else
         {
-            send(clientFD, "Error: User not created");
+            snprintf(response, sizeof(response), "Error: User not created");
+            send(clientFD, response);
             logger.EventLog(WARNING, "{" + std::string(username) + "} " + "[SEND] : Error: User not created");
-            return -1;
         }
     }
     else
     {
-        send(clientFD, "OK");
+        snprintf(response, sizeof(response), "OK");
+        send(clientFD, response);
     }
 }
 
@@ -197,7 +188,7 @@ int Server::checkUserExists(char* username)
 {
     std::ifstream file;
     std::string line;
-    char filePath[MAX_SIZE_MESSAGE];
+    char filePath[MAX_SIZE_BUFFER];
 
     snprintf(filePath, sizeof(filePath), "%s/%s", DESTINATION_PATH, AUTHENTICATION_FILE);
     file.open(filePath, std::ios::in);
@@ -240,7 +231,7 @@ int Server::checkUserExists(char* username)
 int Server::createNewUser(char* username, char* password) 
 {
     std::ofstream file;
-    char filePath[MAX_SIZE_MESSAGE];
+    char filePath[MAX_SIZE_BUFFER];
 
     snprintf(filePath, sizeof(filePath), "%s/very_safe_trust_me_bro.txt", DESTINATION_PATH);
     file.open(filePath, std::ios::app);
@@ -265,9 +256,10 @@ int Server::createNewUser(char* username, char* password)
 
 int Server::waitingUserAuthentication(int clientFD, char* username, char* password) 
 {
+    int attempts = 0;
     while (attempts < 3)
     {
-        char bufferAuthentication[MAX_SIZE_BUFFER];
+        char bufferAuthentication[PACKET_SIZE];
         
         std::cout << "Waiting for client (" << clientFD << ") " << username << " authentication" << std::endl;
         recv(clientFD, bufferAuthentication);
@@ -281,7 +273,7 @@ int Server::waitingUserAuthentication(int clientFD, char* username, char* passwo
 
         logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Waiting for authentication...");
 
-        authenticationStatus = checkClientAuthentication(clientFD, username, password);
+        int authenticationStatus = checkClientAuthentication(clientFD, username, password);
         if (authenticationStatus == 0)
         {
             break;
@@ -295,7 +287,6 @@ int Server::waitingUserAuthentication(int clientFD, char* username, char* passwo
         std::cerr << "Error: Too many attempts" << std::endl;
         logger.EventLog(WARNING, "{" + std::string(username) + "} " + "Error: Too many attempts");
 
-        close(client);
         return -1;
     }
 
@@ -305,7 +296,7 @@ int Server::waitingUserAuthentication(int clientFD, char* username, char* passwo
 int Server::checkClientAuthentication(int client, char* username, char* password) {
     std::ifstream file;
     std::string line;
-    char filePath[MAX_SIZE_MESSAGE];
+    char filePath[MAX_SIZE_BUFFER];
 
     snprintf(filePath, sizeof(filePath), "%s/very_safe_trust_me_bro.txt", DESTINATION_PATH);
     file.open(filePath, std::ios::in);
@@ -325,13 +316,13 @@ int Server::checkClientAuthentication(int client, char* username, char* password
 
             if (strcmp(usernameLine, username) == 0 && strcmp(passwordLine, password) == 0)
             {
-                ::send(client, "OK", MAX_SIZE_MESSAGE, 0);
+                ::send(client, "OK", MAX_SIZE_BUFFER, 0);
                 file.close();
                 return 0;
             }
             else if (strcmp(usernameLine, username) == 0 && strcmp(passwordLine, password) != 0) 
             {
-                ::send(client, "Invalid password", MAX_SIZE_MESSAGE, 0);
+                ::send(client, "Invalid password", MAX_SIZE_BUFFER, 0);
                 logger.EventLog(WARNING, "{" + std::string(username) + "} " + "[SEND] : Invalid password");
 
                 file.close();
@@ -355,6 +346,7 @@ int Server::checkClientAuthentication(int client, char* username, char* password
 int Server::recvClientUpload(int socket, FTP_Packet packet)
 {
     char filePath[MAX_SIZE_PATH];
+    char response[MAX_SIZE_BUFFER];
 
     char* userPath = createFolder(packet.get_Username(), "", "");
     strcpy(filePath, pathToReceivedFile(userPath, packet.get_FileName()));
@@ -369,12 +361,14 @@ int Server::recvClientUpload(int socket, FTP_Packet packet)
         case -1:
             std::cerr << "Error: Could not create or open file " << filePath << std::endl;
             logger.EventLog(ERROR, "{" + std::string(packet.get_Username()) + "} " + "Error: Could not create or open file " + std::string(filePath));
-            send(socket, "Error: Could not create or open file");
+            snprintf(response, sizeof(response), "Error: Could not create or open file on server");
+            send(socket, response);
             return statusRecvFile;
         case -2:
             std::cerr << "Error: Could not write to file " << filePath << std::endl;
             logger.EventLog(ERROR, "{" + std::string(packet.get_Username()) + "} " + "Error: Could not write to file " + std::string(filePath));
-            send(socket, "Error: Could not write to file");
+            snprintf(response, sizeof(response), "Error: During writing/receiving to file on server");
+            send(socket, response);
             return statusRecvFile;
         default:
             break;
@@ -382,30 +376,61 @@ int Server::recvClientUpload(int socket, FTP_Packet packet)
     return 0;
 }
 
-int Server::sendClientDownload(int clientFD, FTP_Packet packetReceived, FTP_Packet responsePacket)
+int Server::sendClientDownload(int clientFD, FTP_Packet packet)
 {
     char filePath[MAX_SIZE_PATH];
-    char response[MAX_SIZE_MESSAGE];
+    char response[MAX_SIZE_BUFFER];
+    FTP_Packet fileHeader = FTP_Packet();
 
-    snprintf(filePath, sizeof(filePath), "data/%s/%s", packetReceived.get_Username(), packetReceived.get_FileName());
+    snprintf(filePath, sizeof(filePath), "data/%s/%s", packet.get_Username(), packet.get_FileName());
     const int64_t fileSize = getFileSize(filePath);
-    responsePacket.set_FileName(filePath);
-    responsePacket.set_FileSize(fileSize);
-    send(clientFD, &responsePacket);
-    sendFile(clientFD, filePath, fileSize);
-    logger.EventLog(DEBUG, "{" + std::string(packetReceived.get_Username()) + "} " + "File send to the client: " + std::string(filePath));
+    fileHeader.set_FileName(filePath);
+    fileHeader.set_FileSize(fileSize);
+    send(clientFD, &fileHeader);
 
+    int statusSendFile = sendFile(clientFD, filePath, fileSize);
+    switch (statusSendFile)
+    {
+    case 0:
+        logger.EventLog(DEBUG, "{" + std::string(packet.get_Username()) + "} " + "File send to the client: " + std::string(filePath));
+        break;
+    case -1:
+        std::cerr << "Error: Could not open file " << filePath << std::endl;
+        logger.EventLog(ERROR, "{" + std::string(packet.get_Username()) + "} " + "Error: Could not create or open file " + std::string(filePath));
+        snprintf(response, sizeof(response), "Error: Could not open file on server");
+        send(clientFD, response);
+        return statusSendFile;
+    case -2:
+        std::cerr << "Error: Could not read into file " << filePath << std::endl;
+        logger.EventLog(ERROR, "{" + std::string(packet.get_Username()) + "} " + "Error: Could not read into file " + std::string(filePath));
+        snprintf(response, sizeof(response), "Error: During file reading/sending on server");
+        send(clientFD, response);
+        return statusSendFile;
+    default:
+        break;
+    }
     return 0;
 }
 
-int Server::deleteFile(char* fileName, char* username) 
+int Server::deleteFile(int clientFD, char* fileName, char* username) 
 {
-    char completePath[MAX_SIZE_MESSAGE];
+    char completePath[MAX_SIZE_PATH];
+    char response[MAX_SIZE_BUFFER];
     snprintf(completePath, sizeof(completePath), "%s%s/%s", DESTINATION_PATH, username, fileName);
 
-    std::cout << "Deleting file complete path: " << completePath << std::endl;
-    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "File deleted: " + std::string(completePath));
     int status = remove(completePath);
+    switch (status)
+    {
+    case 0:
+        logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "File deleted: " + std::string(completePath));    
+        break;
+    default:
+        std::cerr << "Error: Could not delete file" << completePath << std::endl;
+        logger.EventLog(ERROR, "{" + std::string(username) + "} " + "Error: Could not delete file " + std::string(completePath));
+        snprintf(response, sizeof(response), "Error: Could not delete file on server");
+        send(clientFD, response);
+        return status;
+    }
     return status;
 }
 
@@ -435,11 +460,10 @@ void Server::deleteFolder(int client, char* username, const char* path)
 {
     std::string completePath = std::string(DESTINATION_PATH) + username + "/" + path;
     std::filesystem::remove_all(completePath);
-
-    ::send(client, "Folder deleted", MAX_SIZE_MESSAGE, 0);
+    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + " Deleting folder: " + std::string(completePath));
 }
 
-int Server::renameFolder(int client, char* username, const char* oldPath, const char* newFolderName) 
+void Server::renameFolder(int client, char* username, const char* oldPath, const char* newFolderName) 
 {
     std::string completePath = std::string(DESTINATION_PATH) + username + "/" + oldPath;
     std::size_t found = completePath.find_last_of("/\\");
@@ -447,8 +471,7 @@ int Server::renameFolder(int client, char* username, const char* oldPath, const 
     std::cout << "New path: " << newPath << std::endl;
 
     std::filesystem::rename(completePath, newPath);
-    ::send(client, "Folder renamed", MAX_SIZE_MESSAGE, 0);
-    return 0;
+    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Rename folder " + std::string(oldPath) + " to " + std::string(newFolderName));
 }
 
 
@@ -482,6 +505,7 @@ char* Server::createFolder(char* username, const char* foldername, const char* p
         else 
         {
             // PATH DOES NOT EXIST
+            logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Folder " + std::string(checkPath) + " can't be created !");
             return nullptr;
         }
     }
@@ -517,7 +541,7 @@ char* Server::createFolder(char* username, const char* foldername, const char* p
     char* completePathFolder = new char[userFolder.size() + 1];
     std::strcpy(completePathFolder, userFolder.c_str());
 
-    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "User folder created: " + std::string(completePathFolder));
+    logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Folder " + std::string(completePathFolder) + " successfully created on the ftp-server");
 
     return completePathFolder;
 

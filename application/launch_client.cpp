@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     char path[MAX_SIZE_PATH] = "";
     char username[MAX_SIZE_USER];
     char serverIP[INET_ADDRSTRLEN];
-    FTP_Packet* responseBuffer;
+    FTP_Packet responseBuffer = FTP_Packet();
 
     ftpServer = std::strtok(ftpServer, "@");
     strcpy(username, ftpServer);
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
         client.send(clientSocket, &packet);
         client.sendFile(clientSocket, fileName, packet.get_FileSize());
-        client.recv(clientSocket, responseBuffer);
+        client.recv(clientSocket, &responseBuffer);
     } 
     else if (strcmp(command, "-download") == 0) 
     {
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
         client.send(clientSocket, &packet);
         client.recvServerDownload();
-        client.recv(clientSocket, responseBuffer);
+        client.recv(clientSocket, &responseBuffer);
         std::cout << "Downloaded in '" << DESTINATION_PATH << "': " << fileName << std::endl;
     } 
     else if (strcmp(command, "-delete") == 0) 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         packet.set_FileName(fileName);
 
         client.send(clientSocket, &packet);
-        client.recv(clientSocket, responseBuffer);
+        client.recv(clientSocket, &responseBuffer);
     }
     else if (strcmp(command, "-list") == 0) 
     {
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
         packet.set_Path(path);
 
         client.send(clientSocket, &packet);
-        client.recv(clientSocket, responseBuffer);
+        client.recv(clientSocket, &responseBuffer);
     }
     else if (strcmp(command, "-create") == 0) 
     {
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             packet.set_Path(path);
 
             client.send(clientSocket, &packet);
-            client.recv(clientSocket, responseBuffer);
+            client.recv(clientSocket, &responseBuffer);
         }
         else 
         {
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
         packet.set_Path(path);
         
         client.send(clientSocket, &packet);
-        client.recv(clientSocket, responseBuffer);
+        client.recv(clientSocket, &responseBuffer);
     }
     else if (strcmp(command, "-rename") == 0)
     {
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
         packet.set_Path(path);
         
         client.send(clientSocket, &packet);
-        client.recv(clientSocket, responseBuffer);
+        client.recv(clientSocket, &responseBuffer);
     }
     else
     {
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    std::cout << responseBuffer->get_Message() << std::endl;
+    std::cout << responseBuffer.get_Message() << std::endl;
 
     return 0;
 }

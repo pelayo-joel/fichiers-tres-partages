@@ -35,13 +35,13 @@ int Client::recvServerDownload()
     char filePath[MAX_SIZE_PATH];
     char buffer[PACKET_SIZE];
 
-    ::recv(this->get_socketFD(), buffer, PACKET_SIZE, 0); 
+    recv(this->get_socketFD(), buffer); 
     FTP_Packet packetDownload = *(FTP_Packet*) buffer;
 
     strcpy(filePath, DESTINATION_PATH);
     strcat(filePath, packetDownload.get_FileName());
 
-    RecvFile(this->get_socketFD(), filePath, packetDownload.get_FileSize());
+    recvFile(this->get_socketFD(), filePath, packetDownload.get_FileSize());
 
     return 0;
 }
@@ -87,19 +87,19 @@ int Client::userAuthentication(char* username)
 void Client::userRecognition(char* username)
 {
     int clientSocket = this->get_socketFD();
-    char response[MAX_SIZE_BUFFER];
+    char serverResponse[PACKET_SIZE];
 
     send(clientSocket, username);
-    recv(clientSocket, response);
+    recv(clientSocket, serverResponse);
 
-    if (strcmp(response, "OK") != 0)
+    if (strcmp(serverResponse, "OK") != 0)
     {
         char password[MAX_SIZE_USER];
-        std::cout << response;
+        std::cout << serverResponse;
         std::cin >> password;
 
         send(clientSocket, password);
-        recv(clientSocket, response);
+        recv(clientSocket, serverResponse);
     }
     else
     {
