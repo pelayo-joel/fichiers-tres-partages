@@ -37,4 +37,8 @@ public:
     int checkClientAuthentication(int client, char* username, char* password);
     int createNewUser(char* username, char* password);
     void static handleLeave(int signal);
+    void userRecognition(int clientFD, char* username); 
+    int waitingUserAuthentication(int clientFD, char* username, char* password);
+
+
 };

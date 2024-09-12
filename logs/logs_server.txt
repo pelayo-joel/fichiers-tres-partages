@@ -1,5 +1,15 @@
-ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 2
+ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 12
 
 ******* DEBUG *******
-2024-09-11 17:32:05		DEBUG		Servers listens on port 3000
-2024-09-11 17:32:32		DEBUG		Leaving...
+2024-09-12 11:15:39		DEBUG		Servers listens on port 3000
+2024-09-12 11:15:49		DEBUG		Client thread for user :  created.
+2024-09-12 11:15:50		DEBUG		{aurore} Waiting for authentication...
+2024-09-12 11:15:50		DEBUG		User folder created: data/aurore/
+2024-09-12 11:15:50		DEBUG		{aurore} User folder created: data/aurore/
+2024-09-12 11:15:51		DEBUG		{aurore} File uploaded to server: data/aurore/test.txt
+2024-09-12 11:15:51		DEBUG		{Xÿ¿¡U} File uploaded to server: File 'test.txt' successfully uploaded on the ftp-server
+2024-09-12 11:15:51		DEBUG		Client thread for user : Xÿ¿¡U ended.
+2024-09-12 11:16:08		DEBUG		Client thread for user : Xÿ¿¡U created.
+2024-09-12 11:16:09		DEBUG		{aurore} Waiting for authentication...
+2024-09-12 11:16:09		DEBUG		Client thread for user : aurore ended.
+2024-09-12 11:51:07		DEBUG		Leaving...
