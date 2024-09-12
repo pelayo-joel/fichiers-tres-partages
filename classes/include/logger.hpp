@@ -1,5 +1,12 @@
 #pragma once
 
+#define ERROR 0
+#define WARNING 1
+#define INFO 5
+#define DEBUG 9
+
+#define VALIDATE_LOG_LEVEL(lv) ((lv == ERROR || lv == WARNING || lv == INFO || lv == DEBUG) ? lv : INFO)
+
 #include <string>
 #include <vector>
 #include <chrono>

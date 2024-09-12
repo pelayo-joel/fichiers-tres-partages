@@ -11,7 +11,10 @@ AppLogs& AppLogs::Instance() {
 }
 
 void AppLogs::EventLog(int lv, const std::string& m) {
-    if (lv != 0 && lv != 1 && lv != 5 && lv != 9) lv = 5;
+
+    lv = VALIDATE_LOG_LEVEL(lv);
+
+
     if (lv <= this->currentLevel) {
         EventMessage ev;
         ev.level = lv;
@@ -33,9 +36,9 @@ std::string AppLogs::GenerateFile() {
         std::filesystem::create_directories(this->path);
 
         std::string fileContent = "ERROR : " + std::to_string(this->GetNumberForLevel(0)) + "\t\t";
-        if (this->currentLevel >= 1) fileContent += "WARNING : " + std::to_string(this->GetNumberForLevel(1)) + "\t\t";
-        if (this->currentLevel >= 5) fileContent += "INFO : " + std::to_string(this->GetNumberForLevel(5)) + "\t\t";
-        if (this->currentLevel >= 9) fileContent += "DEBUG : " + std::to_string(this->GetNumberForLevel(9));
+        if (this->currentLevel >= ERROR) fileContent += "WARNING : " + std::to_string(this->GetNumberForLevel(1)) + "\t\t";
+        if (this->currentLevel >= INFO) fileContent += "INFO : " + std::to_string(this->GetNumberForLevel(5)) + "\t\t";
+        if (this->currentLevel >= DEBUG) fileContent += "DEBUG : " + std::to_string(this->GetNumberForLevel(9));
         fileContent += "\n\n";
 
         auto appendMessages = [&](int level, const std::string& header) {
@@ -54,9 +57,9 @@ std::string AppLogs::GenerateFile() {
         };
 
         appendMessages(0, "ERROR");
-        if (this->currentLevel > 0) appendMessages(1, "WARNING");
-        if (this->currentLevel >= 5) appendMessages(5, "INFO");
-        if (this->currentLevel >= 9) {
+        if (this->currentLevel > ERROR) appendMessages(1, "WARNING");
+        if (this->currentLevel >= INFO) appendMessages(5, "INFO");
+        if (this->currentLevel >= DEBUG) {
             fileContent += "******* DEBUG *******\n";
             for (const auto& m : this->messages) {
                 std::string txtLevel;
