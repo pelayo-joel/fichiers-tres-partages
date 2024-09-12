@@ -220,7 +220,6 @@ int Server::createClientThread(int clientFD)
             char bufferAuthentication[MAX_SIZE_BUFFER];
             
             std::cout << "Waiting for client " << client << " authentication" << std::endl;
-        	logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Waiting for authentication...");
 
             ::recv(client, bufferAuthentication, MAX_SIZE_BUFFER, 0);
 
@@ -230,6 +229,8 @@ int Server::createClientThread(int clientFD)
             strcpy(username, credentials);
             credentials = std::strtok(NULL, "\0");
             strcpy(password, credentials);
+
+            logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Waiting for authentication...");
 
             authenticationStatus = checkClientAuthentication(client, username, password);
             if (authenticationStatus == 0)
