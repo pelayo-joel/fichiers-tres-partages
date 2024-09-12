@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
+#include <filesystem>
 
 class EventMessage {
 public:

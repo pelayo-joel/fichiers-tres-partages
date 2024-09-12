@@ -29,6 +29,9 @@ int AppLogs::GetNumberForLevel(int lv) {
 std::string AppLogs::GenerateFile() {
     std::string pathFile = this->path + this->fileName;
     try {
+        // Ensure the directory exists before creating the file
+        std::filesystem::create_directories(this->path);
+
         std::string fileContent = "ERROR : " + std::to_string(this->GetNumberForLevel(0)) + "\t\t";
         if (this->currentLevel >= 1) fileContent += "WARNING : " + std::to_string(this->GetNumberForLevel(1)) + "\t\t";
         if (this->currentLevel >= 5) fileContent += "INFO : " + std::to_string(this->GetNumberForLevel(5)) + "\t\t";
