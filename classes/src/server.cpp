@@ -91,7 +91,7 @@ char* Server::createFolder(char* username, const char* foldername, const char* p
 
         // userFolderPath[strLen] = '/';
         userFolderPath[strLen] = '\0';
-        logger.EventLog(9, "User folder created: " + std::string(userFolderPath));
+        logger.EventLog(DEBUG, "User folder created: " + std::string(userFolderPath));
     }
 
     std::cout << "User folder: " << userFolder << std::endl;
@@ -190,6 +190,7 @@ int Server::createClientThread(int clientFD)
 
         ::recv(client, usernameCheck, MAX_SIZE_USER, 0);
 
+        logger.EventLog(DEBUG, "Client thread for user : " + std::string(username) + " created.");
         if (checkUserExists(usernameCheck) != 0)
         {
             char newPassword[MAX_SIZE_MESSAGE];
@@ -314,7 +315,7 @@ int Server::createClientThread(int clientFD)
             {
                 renameFolder(client, newPacket.get_Username(), newPacket.get_Path(), newPacket.get_FolderName());
                 ::send(client, response, MAX_SIZE_MESSAGE, 0);
-                logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Rename folder " + std::string(newPacket.get_FolderName()) + " to " + std::string(newPacket.get_FolderName()));
+                logger.EventLog(DEBUG, "{" + std::string(username) + "} " + "Rename folder " + std::string(newPacket.get_Path()) + " to " + std::string(newPacket.get_FolderName()));
 
                 break;
             }
@@ -323,14 +324,18 @@ int Server::createClientThread(int clientFD)
                 std::cerr << "Error: Invalid command" << std::endl;
                 logger.EventLog(WARNING, "{" + std::string(username) + "} " + "Error: Invalid command");
                 break;
-        }
+
+
+            }
         std::cout << "ID " << client << ": Done" << std::endl;
+        logger.EventLog(DEBUG, "Client thread for user : " + std::string(username) + " ended.");
+
         return 0;
     };
 
     std::thread clientThread(packetParsing, clientFD);
     std::move(clientThread).detach();
-    logger.EventLog(DEBUG, "Client thread started: " + std::to_string(clientFD));
+
 
     return 0;
 }
