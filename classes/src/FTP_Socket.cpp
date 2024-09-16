@@ -43,9 +43,12 @@ ssize_t FTP_Socket::send(int socket, void *buffer)
 
 int FTP_Socket::sendFile(int socket, char* filePath, const int64_t fileSize)
 {
-
+    if (!std::filesystem::exists(filePath) && std::filesystem::is_directory(filePath))
+    {
+        return -3;
+    }
+    
     std::ifstream file(filePath, std::ifstream::binary);
-
     if(!file.is_open())
     {
         std::cerr << "Error: Could not open file " << filePath << std::endl;
@@ -60,7 +63,7 @@ int FTP_Socket::sendFile(int socket, char* filePath, const int64_t fileSize)
 
         if (!file.read(buffer, ssize)) 
         { 
-            return -1; 
+            return -2; 
         }
         const int l = sendFileBuffer(socket, buffer, (int) ssize);
         bytesLeft -= l;
@@ -75,8 +78,11 @@ int FTP_Socket::sendFile(int socket, char* filePath, const int64_t fileSize)
 }
 
 int FTP_Socket::recvFile(int socket, char* filePath, const int64_t fileSize) {
+    // if (!std::filesystem::exists(filePath) || std::filesystem::is_directory(filePath))
+    // {
+    //     return -3;
+    // }
     std::ofstream file(filePath, std::ofstream::binary);
-
     if(!file.is_open())
     {
         std::cerr << "Error: Could not create or open file " << filePath << std::endl;

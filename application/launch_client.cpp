@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         client.send(clientSocket, &packet);
         client.recvServerDownload();
         client.recv(clientSocket, &responseBuffer);
-        std::cout << "Downloaded in '" << DESTINATION_PATH << "': " << fileName << std::endl;
+        // std::cout << "Downloaded in '" << DESTINATION_PATH << "': " << fileName << std::endl;
     } 
     else if (strcmp(command, "-delete") == 0) 
     {
@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
         packet.set_Path(path);
 
         client.send(clientSocket, &packet);
+        client.recvServerList();
         client.recv(clientSocket, &responseBuffer);
     }
     else if (strcmp(command, "-create") == 0) 

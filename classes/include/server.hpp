@@ -25,21 +25,23 @@ public:
     ~Server();
     Server &operator=(const Server &base);
 
+
     int accept();
+
     int createClientThread(int clientFD);
-    char* createFolder(char* username, const char* foldername, const char* path);
-    int recvClientUpload(int socket, FTP_Packet packet);
-    int sendClientDownload(int clientFD, FTP_Packet packet);
-    int deleteFile(int clientFD, char* fileName, char* username);
-    void displayList(int client, char* username, const char* path);
-    void deleteFolder(int client, char* username, const char* path);
-    void renameFolder(int client, char* username, const char* oldPath, const char* newFolderName);
     int checkUserExists(char* username);
     int checkClientAuthentication(int client, char* username, char* password);
+    int waitingUserAuthentication(int clientFD, char* username, char* password);
+    
+    char* createFolder(char* username, const char* foldername, const char* path);
+    int recvClientUpload(int clientFD, FTP_Packet packet);
+    int sendClientDownload(int clientFD, FTP_Packet packet);
+    int displayList(int clientFD, FTP_Packet packet);
+    int deleteFile(int clientFD, char* fileName, char* username);
+    int deleteFolder(int clientFD, char* username, const char* path);
+    int renameFolder(int clientFD, char* username, const char* oldPath, const char* newFolderName);
     int createNewUser(char* username, char* password);
     void static handleLeave(int signal);
     void userRecognition(int clientFD, char* username); 
-    int waitingUserAuthentication(int clientFD, char* username, char* password);
-
-
+    void errorLog(int clientFD, char* username, const char* message, const char* variableMessage = "");
 };

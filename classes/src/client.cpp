@@ -38,10 +38,27 @@ int Client::recvServerDownload()
     recv(this->get_socketFD(), buffer); 
     FTP_Packet packetDownload = *(FTP_Packet*) buffer;
 
-    strcpy(filePath, DESTINATION_PATH);
+    strcpy(filePath, DEFAULT_PATH);
     strcat(filePath, packetDownload.get_FileName());
 
     recvFile(this->get_socketFD(), filePath, packetDownload.get_FileSize());
+
+    return 0;
+}
+
+int Client::recvServerList() 
+{
+    char list[MAX_SIZE_BUFFER];
+    char buffer[PACKET_SIZE];
+    
+    if (recv(this->get_socketFD(), buffer) != PACKET_SIZE)
+    {
+        return -1;
+    }
+    FTP_Packet packetList = *(FTP_Packet*) buffer;
+
+    strcpy(list, packetList.get_Message());
+    std::cout << list << std::endl;
 
     return 0;
 }
