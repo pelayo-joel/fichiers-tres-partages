@@ -1,5 +1,54 @@
-ERROR : 0		WARNING : 0		INFO : 0		DEBUG : 2
+ERROR : 1		WARNING : 0		INFO : 0		DEBUG : 46
+
+******* ERROR *******
+2024-09-16 10:09:15		{aurore} [Error] File 'data/aurore/te' does not exist or cannot be deleted on ftp-server
+
 
 ******* DEBUG *******
-2024-09-11 17:32:05		DEBUG		Servers listens on port 3000
-2024-09-11 17:32:32		DEBUG		Leaving...
+2024-09-16 10:07:37		DEBUG		Servers listens on port 3000
+2024-09-16 10:07:52		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:07:53		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:07:53		DEBUG		{aurore} Folder data/aurore/ successfully created on the ftp-server
+2024-09-16 10:07:53		DEBUG		{aurore} File uploaded to server: data/aurore/mountains-4K.jpg
+2024-09-16 10:07:53		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:08:42		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:08:43		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:08:43		DEBUG		{aurore} File sent to the client: data/aurore/mountains-4K.jpg
+2024-09-16 10:08:43		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:09:06		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:09:07		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:09:07		DEBUG		{aurore} File deleted: data/aurore/test.txt
+2024-09-16 10:09:07		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:09:14		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:09:15		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:09:15		ERROR		{aurore} [Error] File 'data/aurore/te' does not exist or cannot be deleted on ftp-server
+2024-09-16 10:09:15		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:09:36		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:09:37		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:09:37		DEBUG		{aurore} Folder data/aurore/ successfully created on the ftp-server
+2024-09-16 10:09:37		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:09:50		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:09:51		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:09:51		DEBUG		{aurore} Folder data/aurore/dir2 can't be created !
+2024-09-16 10:09:51		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:10:32		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:10:33		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:10:33		DEBUG		{aurore} Folder data/aurore/ successfully created on the ftp-server
+2024-09-16 10:10:33		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:10:46		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:10:47		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:10:47		DEBUG		{aurore}Entries read at data/aurore
+2024-09-16 10:10:47		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:10:57		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:10:58		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:10:58		DEBUG		{aurore}Entries read at data/aurore/directory
+2024-09-16 10:10:58		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:11:33		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:11:35		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:11:35		DEBUG		{aurore} Rename folder directory to newDir
+2024-09-16 10:11:35		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:11:46		DEBUG		Client thread for user : aurore created.
+2024-09-16 10:11:49		DEBUG		{aurore} Waiting for authentication...
+2024-09-16 10:11:49		DEBUG		{aurore}  Deleting folder: data/aurore/newDir
+2024-09-16 10:11:49		DEBUG		Client thread for user : aurore ended.
+2024-09-16 10:11:54		DEBUG		Leaving...

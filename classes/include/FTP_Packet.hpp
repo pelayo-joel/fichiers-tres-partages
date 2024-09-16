@@ -13,7 +13,7 @@
 
 #define PACKET_SIZE sizeof(FTP_Packet)
 #define MAX_SIZE_USER 64
-#define MAX_SIZE_MESSAGE 128
+#define MAX_SIZE_PATH 128
 #define MAX_SIZE_BUFFER 512
 
 #define BUFFER_CHUNK_SIZE 1024
@@ -34,16 +34,13 @@ enum command
 class FTP_Packet
 {
 private:
-    // Header
     int64_t fileSize;
-    char fileName[MAX_SIZE_MESSAGE];
+    char fileName[MAX_SIZE_PATH];
     char userName[MAX_SIZE_USER];
-    char folderName[MAX_SIZE_MESSAGE];
-    char path[MAX_SIZE_MESSAGE];
+    char folderName[MAX_SIZE_PATH];
+    char path[MAX_SIZE_PATH];
+    char message[MAX_SIZE_BUFFER];
     command command_;
-  
-    // Data
-    // char rawData[MAX_SIZE_PACKET];
     
 public:
     FTP_Packet();
@@ -56,15 +53,14 @@ public:
     char* get_Username();
     char* get_FolderName();
     char* get_Path();
-    // char* get_RawData();
+    char* get_Message();
     command get_Command();
-
 
     void set_FileName(char* newName);
     void set_FileSize(const int64_t newSize);
     void set_Username(char* newName);
     void set_FolderName(char* newName);
     void set_Path(char* newPath);
-    // void set_RawData(void* data);
+    void set_Message(char* newMessage);
     void set_Command(command newCommand);
 };

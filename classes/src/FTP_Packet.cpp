@@ -1,13 +1,10 @@
 #include "../include/FTP_Packet.hpp"
 
-FTP_Packet::FTP_Packet() {
-
-}
+FTP_Packet::FTP_Packet() { }
 
 FTP_Packet::FTP_Packet(const FTP_Packet &base) {
     fileSize = base.fileSize;
     memcpy(fileName, base.fileName, PACKET_SIZE);
-    // memcpy(rawData, base.rawData, MAX_SIZE_PACKET);
 }
 
 FTP_Packet::~FTP_Packet() {}
@@ -27,7 +24,7 @@ int64_t FTP_Packet::get_FileSize() { return fileSize; }
 char* FTP_Packet::get_Username() { return userName; }
 char* FTP_Packet::get_FolderName() { return folderName; }
 char* FTP_Packet::get_Path() { return path; }
-// char* FTP_Packet::get_RawData() { return rawData; }
+char* FTP_Packet::get_Message() { return message; }
 command FTP_Packet::get_Command() { return command_; }
 
 
@@ -48,9 +45,9 @@ void FTP_Packet::set_FolderName(char* newName) {
 void FTP_Packet::set_Path(char* newPath) {
     strcpy(path, newPath);
 }
-// void FTP_Packet::set_RawData(void* data) {
-//     memcpy(rawData, data, MAX_SIZE_PACKET);
-// }
+void FTP_Packet::set_Message(char* newMessage) {
+    strcpy(message, newMessage);
+}
 void FTP_Packet::set_Command(command newCommand) {
     command_ = newCommand;
 

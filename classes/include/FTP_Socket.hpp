@@ -15,6 +15,7 @@
 #include "FTP_Packet.hpp"
 
 #define DESTINATION_PATH "data/"
+#define AUTHENTICATION_FILE "very_safe_trust_me_bro.txt"
 
 class FTP_Socket
 {
@@ -32,9 +33,9 @@ public:
     virtual ~FTP_Socket();
     FTP_Socket &operator=(const FTP_Socket &other);
 
-    ssize_t recv(int clientSocket, void* buffer, int flag);
-    ssize_t send(int socket, void* buffer, int flag);
-    int RecvFile(int socket, char* filePath, const int64_t fileSize);
+    ssize_t recv(int clientSocket, void* buffer);
+    ssize_t send(int socket, void* buffer);
+    int recvFile(int socket, char* filePath, const int64_t fileSize);
     int sendFile(int clientSocket, char* filePath, const int64_t fileSize);
     int recvFileBuffer(int socket, char* buffer, int bufferSize);
     int sendFileBuffer(int socket, char* buffer, int bufferSize);

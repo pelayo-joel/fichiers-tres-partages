@@ -3,7 +3,7 @@
 
 #include "FTP_Socket.hpp"
 
-// #define DESTINATION_PATH "clientFiles/"
+#define DEFAULT_PATH "clientFiles/"
 
 
 class Client : public FTP_Socket
@@ -17,6 +17,8 @@ public:
     ~Client();
     Client &operator=(const Client &base);
 
+    void userRecognition(char* username);
+    int userAuthentication(char* username);
     int recvServerDownload();
-    int sendPacket(FTP_Packet packet);
+    int recvServerList();
 };
